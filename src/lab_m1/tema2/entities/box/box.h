@@ -19,9 +19,8 @@ public:
 	Box(dimensionsTriplet, dimensionsTriplet);
 	~Box();
 	glm::mat4 getModelMatrix();
-	float getX();
-	float getY();
-	float getZ();
+	dimensionsTriplet getPosition();
+	void setPosition(float, float, float);
 };
 
 #endif

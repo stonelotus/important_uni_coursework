@@ -69,11 +69,14 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
     {   //PLAYER RENDER
         RenderMesh(meshes["box"], shaders["VertexNormal"], player.body.getModelMatrix());   // body
         RenderMesh(meshes["box"], shaders["VertexNormal"], player.head.getModelMatrix());   // head
-        RenderMesh(meshes["box"], shaders["VertexNormal"], player.left_leg.getModelMatrix());   // head
-        RenderMesh(meshes["box"], shaders["VertexNormal"], player.right_leg.getModelMatrix());   // head
-
+        RenderMesh(meshes["box"], shaders["VertexNormal"], player.left_leg.getModelMatrix());    // left_leg
+        RenderMesh(meshes["box"], shaders["VertexNormal"], player.right_leg.getModelMatrix());   // right_leg
+        RenderMesh(meshes["box"], shaders["VertexNormal"], player.left_arm.getModelMatrix());    // left_arm
+        RenderMesh(meshes["box"], shaders["VertexNormal"], player.right_arm.getModelMatrix());   // right_arm
+        RenderMesh(meshes["box"], shaders["Simple"], player.left_palm.getModelMatrix());   // right_arm
+        RenderMesh(meshes["box"], shaders["Simple"], player.right_palm.getModelMatrix());   // right_arm
     }
-    
+
 }
 
 
@@ -109,15 +112,21 @@ void SurvivalMaze::OnInputUpdate(float deltaTime, int mods)
             carTranslateZ += deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_S)) {
+            player.Move(0, 0, -deltaTime);
             translateZ += deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_W)) {
             translateZ -= deltaTime;
+            player.Move(0, 0, deltaTime);
         }
         if (window->KeyHold(GLFW_KEY_A)) {
+            player.Move(+deltaTime, 0, 0);
+
             translateX -= deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_D)) {
+            player.Move(-deltaTime, 0, 0);
+
             translateX += deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_R)) {

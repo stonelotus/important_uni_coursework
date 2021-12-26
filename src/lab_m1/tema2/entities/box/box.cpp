@@ -14,12 +14,12 @@ glm::mat4 Box::getModelMatrix() {
 	return this->modelMatrix;
 }
 
-float Box::getX() {
-	return this->x;
+void Box::setPosition(float x, float y, float z) {
+	this->x += x;
+	this->y += y;
+	this->z += z;
+	this->modelMatrix = transform3D::Translate(x,y,z) * this->modelMatrix;
 }
-float Box::getY() {
-	return this->y;
-}
-float Box::getZ() {
-	return this->z;
+dimensionsTriplet Box::getPosition() {
+	return { x = this->x, y = this->y, z = this->z };
 }
