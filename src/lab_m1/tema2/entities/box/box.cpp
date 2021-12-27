@@ -18,7 +18,7 @@ void Box::setPosition(float x, float y, float z) {
 	this->x += x;
 	this->y += y;
 	this->z += z;
-	this->modelMatrix = transform3D::Translate(x,y,z) * this->modelMatrix;
+	this->modelMatrix = transform3D::Translate(x,y,z)*this->modelMatrix;
 }
 dimensionsTriplet Box::getPosition() {
 	return { x = this->x, y = this->y, z = this->z };

@@ -1,9 +1,14 @@
 #pragma once
-
+#ifndef SURVIVAL_MAZE_H
+#define SURVIVAL_MAZE_H
 #include "components/simple_scene.h"
 #include "lab_m1/tema2/entities/player/player.h"
-
-
+#include <vector>
+#include <string>
+#include <iostream>
+#include <chrono>
+#include <random>
+using namespace std;
 
 
     class SurvivalMaze : public gfxc::SimpleScene
@@ -41,3 +46,5 @@
         Player player;
         //Box box;
     };
+
+#endif

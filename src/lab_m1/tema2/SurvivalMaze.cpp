@@ -1,12 +1,8 @@
 #include "lab_m1/tema2/SurvivalMaze.h"
 
-#include <vector>
-#include <string>
-#include <iostream>
 
 #include "lab_m1/tema2/transform3D.h"
-
-using namespace std;
+#include "lab_m1/tema2/helpers/maze.cpp"
 
 
 /*
@@ -18,6 +14,63 @@ using namespace std;
 SurvivalMaze::SurvivalMaze()
 {
 }
+//////////////// MAZE_FUNCTIONS //////////////////////////////////////
+int di[] = { 0,1,0,-1 };
+int dj[] = { 1,0,-1,0 };
+int di_next[] = { 0,2,0,-2 };
+int dj_next[] = { 2,0,-2,0 };
+
+
+bool isValidWall(int x, int y, int coming_x, int coming_y, vector<vector<int>> playground) {
+    for (int i = 0; i < 4; i++) {
+        if (x + di[i] != coming_x && 
+            y + dj[i] != coming_y && 
+            x+di[i] < playground.size() && 
+            y+dj[i] < playground[i].size()) {
+            if (playground[x + di[i]][y + dj[i]] == 0) return false;
+        }
+    }
+    return true;
+}
+
+bool isValidCell(int x, int y, vector<vector<int>> playground) {
+    if ( x >= 0 && x < playground.size() && y >= 0 && y < playground[x].size() && playground[x][y] == 1) return true;
+    else return false;
+}
+
+void dfs(int x, int y, vector<vector<int>> &playground) {
+    playground[x][y] = 0;
+
+    vector<int> wayV;
+    wayV.push_back(0);
+    wayV.push_back(1);
+    wayV.push_back(2);
+    wayV.push_back(3);
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    shuffle(wayV.begin(), wayV.end(), default_random_engine(seed));
+
+    for (int i = 0; i < wayV.size(); i++) {
+        cout << wayV[i] << " ";
+    }
+    cout << endl;
+    for (int i = 0; i < wayV.size(); i++) {
+        int way = wayV[i];
+
+
+        if (isValidCell(x + di_next[way], y + dj_next[way], playground) && isValidWall(x + di[way], y + dj[way], x, y, playground)) {
+            dfs(x + di[way], y + dj[way], playground);
+        }
+    }
+
+
+}
+void CreateRandomMaze(int n, int m, vector<vector<int>> &maze) {
+    maze = vector<vector<int>>(n, vector<int>(m, 1));
+    //dfs(rand() % 6 + 1, rand() % 6 + 1, maze);
+    dfs(3, 3, maze);
+}
+///////////////////////////////
 
 
 SurvivalMaze::~SurvivalMaze()
@@ -42,6 +95,17 @@ void SurvivalMaze::Init()
     player = Player(0, 0, 0);
     //box = Box(10.f);
 
+    // playground maze creation
+
+    vector<vector<int>> playground;
+    CreateRandomMaze(8, 8, playground);
+    cout << "NICE " << endl;
+    for (int i = 0; i < playground.size(); i++) {
+        for (int j = 0; j < playground[0].size(); j++) {
+            cout << playground[i][j] << " ";
+        }
+        cout << endl;
+    }
     
 }
 
