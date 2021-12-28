@@ -97,16 +97,20 @@ void SurvivalMaze::Init()
 
     // playground maze creation
 
-    vector<vector<int>> playground;
-    CreateRandomMaze(8, 8, playground);
+    vector<vector<int>> playground_matrix;
+    CreateRandomMaze(20, 20, playground_matrix);
     cout << "NICE " << endl;
-    for (int i = 0; i < playground.size(); i++) {
-        for (int j = 0; j < playground[0].size(); j++) {
-            cout << playground[i][j] << " ";
+    for (int i = 0; i < playground_matrix.size(); i++) {
+        for (int j = 0; j < playground_matrix[i].size(); j++) {
+            if (playground_matrix[i][j] == 1) {
+                playground.push_back(Box({ i + 1.f,1.5f,j + 1.f }, { 1.f,3.f,1.f }));
+             /*   playground.push_back(Box({ i + 1.f,1.5f,j + 1.f }, { 1.f,1.f,1.f }));
+                playground.push_back(Box({ i + 1.f,2.5f,j + 1.f }, { 1.f,1.f,1.f }));*/
+            }
         }
-        cout << endl;
     }
-    
+;
+
 }
 
 
@@ -140,6 +144,17 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
         RenderMesh(meshes["box"], shaders["Simple"], player.left_palm.getModelMatrix());   // right_arm
         RenderMesh(meshes["box"], shaders["Simple"], player.right_palm.getModelMatrix());   // right_arm
     }
+
+    {
+        // MAZE RENDERING
+        for (int i = 0; i < playground.size(); i++) {
+            //glm::mat4 modelMatrix = glm::mat4(1);
+            //modelMatrix *= transform3D::Translate(playground[i].getPosition().x,playground[i].getPosition().y,playground[i].getPosition().z);
+            RenderMesh(meshes["box"], shaders["VertexNormal"], playground[i].getModelMatrix());;  // body
+
+        }
+    }
+    
 
 }
 

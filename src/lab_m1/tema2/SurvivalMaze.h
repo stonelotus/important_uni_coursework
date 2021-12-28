@@ -45,6 +45,8 @@ using namespace std;
 
         Player player;
         //Box box;
+        vector<Box> playground;
+
     };
 
 #endif
