@@ -8,6 +8,7 @@
 #include <iostream>
 #include <chrono>
 #include <random>
+#include "lab_m1/tema2/entities/sphere/sphere.h"
 using namespace std;
 
 
@@ -44,9 +45,9 @@ using namespace std;
         float carAngularStepOZ;
 
         Player player;
-        //Box box;
+        Box test_box;
         vector<Box> playground;
-
+        Sphere test_sphere;
     };
 
 #endif

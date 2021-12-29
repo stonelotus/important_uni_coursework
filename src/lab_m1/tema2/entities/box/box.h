@@ -1,15 +1,7 @@
 #ifndef BOX_HEADER
 #define BOX_HEADER
-#include <vector>
-#include "core/engine.h"
-#include "utils/gl_utils.h"
-#include "lab_m1/tema2/transform3D.h"
 
-typedef struct dimensionsTriplet{
-	float x, y, z;
-};
-
-
+#include "lab_m1/tema2/helpers/dataStructures.h"
 class Box {
 	float x, y, z;
 	float sizeX, sizeY, sizeZ;

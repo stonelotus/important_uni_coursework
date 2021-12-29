@@ -1,8 +1,5 @@
 #include "lab_m1/tema2/SurvivalMaze.h"
-
-
-#include "lab_m1/tema2/transform3D.h"
-#include "lab_m1/tema2/helpers/maze.cpp"
+#include "lab_m1/tema2/helpers/dataStructures.h"
 
 
 /*
@@ -19,6 +16,28 @@ int di[] = { 0,1,0,-1 };
 int dj[] = { 1,0,-1,0 };
 int di_next[] = { 0,2,0,-2 };
 int dj_next[] = { 2,0,-2,0 };
+
+
+//bool intersect(, box) {
+//    // get box closest point to sphere center by clamping
+//    float x = max(box.minX, min(sphere.x, box.maxX));
+//    float y = max(box.minY, min(sphere.y, box.maxY));
+//    float z = max(box.minZ, min(sphere.z, box.maxZ));
+//
+//    // this is the same as isPointInsideSphere
+//    float distance = sqrt((x - sphere.x) * (x - sphere.x) +
+//        (y - sphere.y) * (y - sphere.y) +
+//        (z - sphere.z) * (z - sphere.z));
+//
+//    return distance < sphere.radius;
+//}
+
+bool CheckSpheresCollision(custom_structs::sphere sphere1, custom_structs::sphere sphere2) {
+    float distance = sqrt((sphere1.x - sphere2.x) * (sphere1.x - sphere2.x) +
+        (sphere1.y - sphere2.y) * (sphere1.y - sphere2.y) +
+        (sphere1.z - sphere2.z) * (sphere1.z - sphere2.z));
+    return distance < (sphere1.radius + sphere2.radius);
+}
 
 
 bool isValidWall(int x, int y, int coming_x, int coming_y, vector<vector<int>> playground) {
@@ -87,6 +106,14 @@ void SurvivalMaze::Init()
     Mesh* mesh2 = new Mesh("quad");
     mesh2->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "quad.obj");
     meshes[mesh2->GetMeshID()] = mesh2;
+
+    
+    {
+        Mesh* mesh = new Mesh("sphere");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "sphere.obj");
+        meshes[mesh->GetMeshID()] = mesh;
+    }
+    
     // Initialize tx, ty and tz (the translation steps)
     translateX = 0;
     translateY = 0;
@@ -94,7 +121,8 @@ void SurvivalMaze::Init()
 
     player = Player(0, 0, 0);
     //box = Box(10.f);
-
+    test_sphere = Sphere({ 1.f,1.f,1.f }, 6.f);
+    test_box = Box({ 0.f,0.f,0.f }, { 1.f,1.f,1.f });
     // playground maze creation
 
     vector<vector<int>> playground_matrix;
@@ -132,6 +160,10 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
     glPointSize(5);
     glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 
+    {
+        // TEST RENDERS
+        RenderMesh(meshes["box"], shaders["VertexNormal"], test_box.getModelMatrix());
+    }
     
 
     {   //PLAYER RENDER
@@ -153,6 +185,22 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
             RenderMesh(meshes["box"], shaders["VertexNormal"], playground[i].getModelMatrix());;  // body
 
         }
+    }
+
+
+    {
+        // SPHERE test
+        RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_sphere.getModelMatrix());
+    }
+
+    {
+        // Check player-maze collision
+        for (int i = 0; i < playground.size(); i++) {
+            if (CheckSpheresCollision({ player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, 0.3f },
+                { playground[i].getPosition().x,playground[i].getPosition().y ,playground[i].getPosition().z,0.5f })) {
+                cout << "COLLISION BOIIII " << endl;
+                }
+            }
     }
     
 
