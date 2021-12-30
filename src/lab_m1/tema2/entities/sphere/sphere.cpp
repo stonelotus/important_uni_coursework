@@ -7,11 +7,18 @@ Sphere::Sphere(dimensionsTriplet position, float radius) :x_center(position.x), 
 	this->modelMatrix = glm::scale(this->modelMatrix, { this->radius, this->radius, this->radius });
 	this->modelMatrix = glm::translate(this->modelMatrix, { this->x_center,this->y_center,this->z_center });
 }
-
+Sphere::~Sphere() {};
 glm::mat4 Sphere::getModelMatrix() {
 	return this->modelMatrix;
 }
 
 float Sphere::getRadius() {
 	return this->radius;
+}
+void Sphere::Move(dimensionsTriplet offset) {
+	this->modelMatrix = glm::translate(this->modelMatrix, { offset.x,offset.y,offset.z});
+}
+
+dimensionsTriplet Sphere::getPosition() {
+	return { this->x_center,this->y_center,this->z_center };
 }

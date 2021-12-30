@@ -9,6 +9,7 @@
 #include <chrono>
 #include <random>
 #include "lab_m1/tema2/entities/sphere/sphere.h"
+#include "lab_m1/tema2/entities/bullet/bullet.h"
 using namespace std;
 
 
@@ -48,8 +49,9 @@ using namespace std;
         Box test_box;
         vector<Box> playground;
         Sphere test_sphere;
-
+        Bullet test_bullet;
         void DoPlayerObjectsCollisions();
+        vector<Bullet>bullets;
     };
 
 #endif

@@ -9,8 +9,11 @@ class Sphere {
 public:
 	Sphere();
 	Sphere(dimensionsTriplet, float);
+	~Sphere();
 	glm::mat4 getModelMatrix();
 	float getRadius();
+	void Move(dimensionsTriplet);
+	dimensionsTriplet getPosition();
 };
 
 #endif

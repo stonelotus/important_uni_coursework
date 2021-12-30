@@ -124,20 +124,21 @@ void SurvivalMaze::Init()
     test_sphere = Sphere({ 1.f,1.f,1.f }, 6.f);
     test_box = Box({ 0.f,0.f,0.f }, { 1.f,1.f,1.f });
     // playground maze creation
-
-    vector<vector<int>> playground_matrix;
-    CreateRandomMaze(20, 20, playground_matrix);
-    cout << "NICE " << endl;
-    for (int i = 0; i < playground_matrix.size(); i++) {
-        for (int j = 0; j < playground_matrix[i].size(); j++) {
-            if (playground_matrix[i][j] == 1) {
-                playground.push_back(Box({ i + 1.f,1.5f,j + 1.f }, { 1.f,3.f,1.f }));
-             /*   playground.push_back(Box({ i + 1.f,1.5f,j + 1.f }, { 1.f,1.f,1.f }));
-                playground.push_back(Box({ i + 1.f,2.5f,j + 1.f }, { 1.f,1.f,1.f }));*/
+    {
+        vector<vector<int>> playground_matrix;
+        CreateRandomMaze(20, 20, playground_matrix);
+        for (int i = 0; i < playground_matrix.size(); i++) {
+            for (int j = 0; j < playground_matrix[i].size(); j++) {
+                if (playground_matrix[i][j] == 1) {
+                    playground.push_back(Box({ i + 1.f,1.5f,j + 1.f }, { 1.f,3.f,1.f }));
+            
+                }
             }
         }
     }
-;
+
+  
+
 
 }
 
@@ -176,6 +177,32 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
         }
        
     }
+
+    {
+        //BULLETS POSITION & LIFE 
+        for (int i = 0; i < bullets.size(); i++) {
+            
+            if(bullets[i].getRemainingDistance() <= 0){
+                bullets.erase(bullets.begin() + i);
+            }
+            else {
+                bullets[i].Move({1.f*deltaTimeSeconds,0.f,0.f });
+                bullets[i].ModifyRemainingDistance(-1.f*deltaTimeSeconds*3.f);
+            }
+        }
+
+        // BULLETS-WALLS COLLISIONS CHECK
+        for (int i = 0; i < bullets.size(); i++) {
+            for (int j = 0; j < playground.size(); j++) {
+                if (CheckSpheresCollision({ bullets[i].getPosition().x, bullets[i].getPosition().y, bullets[i].getPosition().z,1.5f },
+                                          { playground[j].getPosition().x, playground[j].getPosition().y,playground[j].getPosition().z, 1.5f})) {
+                    cout << "Collision on bullet " << i << endl;
+                    bullets.erase(bullets.begin() + i);
+                    break;
+                }
+            }
+        }
+    }
     
 
     {   //PLAYER RENDER
@@ -200,6 +227,13 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
     {
         // SPHERE test
         RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_sphere.getModelMatrix());
+    }
+
+    {
+        // BULLETS RENDER 
+        for (int i = 0; i < bullets.size(); i++) {
+            RenderMesh(meshes["sphere"], shaders["VertexNormal"], bullets[i].getModelMatrix());
+        }
     }
 
   
@@ -320,7 +354,7 @@ void SurvivalMaze::OnInputUpdate(float deltaTime, int mods)
 void SurvivalMaze::OnKeyPress(int key, int mods)
 {
     // Add key press event
-    if (key == GLFW_KEY_SPACE)
+    if (key == GLFW_KEY_LEFT_CONTROL)
     {
         switch (polygonMode)
         {
@@ -334,6 +368,13 @@ void SurvivalMaze::OnKeyPress(int key, int mods)
             polygonMode = GL_LINE;
             break;
         }
+
+    }
+
+    else if (key == GLFW_KEY_SPACE)
+    {
+        cout << "NICEEE" << endl;
+        bullets.push_back(Bullet({player.getPosition().x,player.getPosition().y,player.getPosition().z}, 2.f));
     }
 }
 
