@@ -13,6 +13,7 @@ public:
 	glm::mat4 getModelMatrix();
 	dimensionsTriplet getPosition();
 	void setPosition(float, float, float);
+	void Move(float, float, float);
 };
 
 #endif

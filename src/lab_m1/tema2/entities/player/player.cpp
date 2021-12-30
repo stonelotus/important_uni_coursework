@@ -42,10 +42,30 @@ Player::Player(){}
 Player::~Player() {};
 
 void Player::Move(float x, float y, float z){
+	this->last_position = { x,y,z };
 	this->x += x;
 	this->y += y;
 	this->z += z;
 	
+	body.Move(x, y, z);
+	head.Move(x, y, z);
+	left_leg.Move(x, y, z);
+	right_leg.Move(x, y, z);
+	right_arm.Move(x, y, z);
+	left_arm.Move(x, y, z);
+	right_palm.Move(x, y, z);
+	left_palm.Move(x, y, z);
+
+	//for (int i = 0; i < 6; i++) {
+	//	player_parts[i].setPosition(x, y, z);
+	//}
+}
+
+void Player::setPosition(dimensionsTriplet position) {
+	this->x = position.x;
+	this->y = position.y;
+	this->z = position.z;
+
 	body.setPosition(x, y, z);
 	head.setPosition(x, y, z);
 	left_leg.setPosition(x, y, z);
@@ -55,12 +75,13 @@ void Player::Move(float x, float y, float z){
 	right_palm.setPosition(x, y, z);
 	left_palm.setPosition(x, y, z);
 
-	//for (int i = 0; i < 6; i++) {
-	//	player_parts[i].setPosition(x, y, z);
-	//}
-
 }
-
+void Player::setLastPosition() {
+	this->last_position = { this->x,this->y,this->z };
+}
+dimensionsTriplet Player::getLastMove() {
+	return this->last_position;
+}
 dimensionsTriplet Player::getPosition() {
 	return { x = this->x,y = this->y,z = this->z };
 }

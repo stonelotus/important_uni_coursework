@@ -14,7 +14,7 @@ glm::mat4 Box::getModelMatrix() {
 	return this->modelMatrix;
 }
 
-void Box::setPosition(float x, float y, float z) {
+void Box::Move(float x, float y, float z) {
 	this->x += x;
 	this->y += y;
 	this->z += z;
@@ -22,4 +22,13 @@ void Box::setPosition(float x, float y, float z) {
 }
 dimensionsTriplet Box::getPosition() {
 	return { x = this->x, y = this->y, z = this->z };
+}
+
+void Box::setPosition(float x, float y, float z) {
+	this->x = x;
+	this->y = y;
+	this->z = z;
+	this->modelMatrix = glm::mat4(1);
+	this->modelMatrix = glm::scale(this->modelMatrix, { this->sizeX, this->sizeY, this->sizeZ });
+	this->modelMatrix = glm::translate(this->modelMatrix, { this->x,this->y,this->z });
 }

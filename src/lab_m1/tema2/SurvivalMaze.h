@@ -48,6 +48,8 @@ using namespace std;
         Box test_box;
         vector<Box> playground;
         Sphere test_sphere;
+
+        void DoPlayerObjectsCollisions();
     };
 
 #endif

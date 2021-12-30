@@ -162,7 +162,19 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
 
     {
         // TEST RENDERS
-        RenderMesh(meshes["box"], shaders["VertexNormal"], test_box.getModelMatrix());
+        //RenderMesh(meshes["box"], shaders["VertexNormal"], test_box.getModelMatrix());
+    }
+
+    {
+        // Check player-maze collision
+        for (int i = 0; i < playground.size(); i++) {
+            if (CheckSpheresCollision({ player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, 0.3f },
+                { playground[i].getPosition().x,playground[i].getPosition().y ,playground[i].getPosition().z,0.5f })) {
+                cout << "COLLISION BOIIII " << endl;
+                player.Move( -player.getLastMove().x, -player.getLastMove().y, -player.getLastMove().z );
+            }
+        }
+       
     }
     
 
@@ -180,10 +192,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
     {
         // MAZE RENDERING
         for (int i = 0; i < playground.size(); i++) {
-            //glm::mat4 modelMatrix = glm::mat4(1);
-            //modelMatrix *= transform3D::Translate(playground[i].getPosition().x,playground[i].getPosition().y,playground[i].getPosition().z);
             RenderMesh(meshes["box"], shaders["VertexNormal"], playground[i].getModelMatrix());;  // body
-
         }
     }
 
@@ -193,15 +202,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
         RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_sphere.getModelMatrix());
     }
 
-    {
-        // Check player-maze collision
-        for (int i = 0; i < playground.size(); i++) {
-            if (CheckSpheresCollision({ player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, 0.3f },
-                { playground[i].getPosition().x,playground[i].getPosition().y ,playground[i].getPosition().z,0.5f })) {
-                cout << "COLLISION BOIIII " << endl;
-                }
-            }
-    }
+  
     
 
 }
@@ -218,10 +219,22 @@ void SurvivalMaze::FrameEnd()
  *  how they behave, see `input_controller.h`.
  */
 
+void SurvivalMaze::DoPlayerObjectsCollisions() {
+    for (int i = 0; i < playground.size(); i++) {
+        if (CheckSpheresCollision({ player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, 0.3f },
+            { playground[i].getPosition().x,playground[i].getPosition().y ,playground[i].getPosition().z,0.5f })) {
+            cout << "COLLISION BOIIII " << endl;
+            player.Move(-player.getLastMove().x, -player.getLastMove().y, -player.getLastMove().z);
+        }
+    }
+}
 
 void SurvivalMaze::OnInputUpdate(float deltaTime, int mods)
 {
     // TODO(student): Add transformation logic
+          // Check player-maze collision
+  
+
     if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) {
         if (window->KeyHold(GLFW_KEY_RIGHT)) {
             carTranslateX += deltaTime;
@@ -240,19 +253,26 @@ void SurvivalMaze::OnInputUpdate(float deltaTime, int mods)
         }
         if (window->KeyHold(GLFW_KEY_S)) {
             player.Move(0, 0, -deltaTime);
+            DoPlayerObjectsCollisions();
             translateZ += deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_W)) {
             translateZ -= deltaTime;
             player.Move(0, 0, deltaTime);
+            DoPlayerObjectsCollisions();
+
+         
         }
         if (window->KeyHold(GLFW_KEY_A)) {
+
             player.Move(+deltaTime, 0, 0);
+            DoPlayerObjectsCollisions();
 
             translateX -= deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_D)) {
             player.Move(-deltaTime, 0, 0);
+            DoPlayerObjectsCollisions();
 
             translateX += deltaTime;
         }
@@ -263,6 +283,7 @@ void SurvivalMaze::OnInputUpdate(float deltaTime, int mods)
             translateY -= deltaTime;
         }
     }
+   
     if (window->KeyHold(GLFW_KEY_1)) {
         scaleX += deltaTime;
         scaleY += deltaTime;
