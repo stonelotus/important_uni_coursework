@@ -6,6 +6,7 @@
 #include "lab_m1/tema2/transform3D.h"
 #include "lab_m1/tema2/entities/box/box.h"
 
+#define PLAYER_HITBOX_RADIUS 0.3f
 class Player {
 	
 private:

@@ -16,6 +16,10 @@ float Sphere::getRadius() {
 	return this->radius;
 }
 void Sphere::Move(dimensionsTriplet offset) {
+	this->x_center += offset.x;
+	this->y_center += offset.y;
+	this->z_center += offset.z;
+
 	this->modelMatrix = glm::translate(this->modelMatrix, { offset.x,offset.y,offset.z});
 }
 

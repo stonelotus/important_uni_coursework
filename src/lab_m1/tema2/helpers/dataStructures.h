@@ -8,6 +8,8 @@
 #include "utils/gl_utils.h"
 #include "lab_m1/tema2/transform3D.h"
 
+#define PLAYGROUND_BOX_HITBOX_RADIUS 0.5f
+
 typedef struct dimensionsTriplet {
 	float x, y, z;
 };
