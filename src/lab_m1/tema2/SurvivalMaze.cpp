@@ -11,6 +11,8 @@
 SurvivalMaze::SurvivalMaze()
 {
 }
+
+
 //////////////// MAZE_FUNCTIONS //////////////////////////////////////
 int di[] = { 0,1,0,-1 };
 int dj[] = { 1,0,-1,0 };
@@ -69,13 +71,9 @@ void dfs(int x, int y, vector<vector<int>> &playground) {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     shuffle(wayV.begin(), wayV.end(), default_random_engine(seed));
 
-    for (int i = 0; i < wayV.size(); i++) {
-        cout << wayV[i] << " ";
-    }
-    cout << endl;
+  
     for (int i = 0; i < wayV.size(); i++) {
         int way = wayV[i];
-
 
         if (isValidCell(x + di_next[way], y + dj_next[way], playground) && isValidWall(x + di[way], y + dj[way], x, y, playground)) {
             dfs(x + di[way], y + dj[way], playground);
@@ -85,9 +83,9 @@ void dfs(int x, int y, vector<vector<int>> &playground) {
 
 }
 void CreateRandomMaze(int n, int m, vector<vector<int>> &maze) {
-    maze = vector<vector<int>>(n, vector<int>(m, 1));
+    maze = vector<vector<int>>(n, vector<int>(m,    1));
     //dfs(rand() % 6 + 1, rand() % 6 + 1, maze);
-    dfs(3, 3, maze);    //TODO make random entry
+    dfs(3, 3, maze);    //TODO make random starting algorithm point
 }
 ///////////////////////////////
 
@@ -127,10 +125,19 @@ void SurvivalMaze::Init()
     {
         vector<vector<int>> playground_matrix;
         CreateRandomMaze(20, 20, playground_matrix);
+       /* cout << "Nice matrix\n";
+        for (int i = 0; i < playground_matrix.size(); i++) {
+            for (int j = 0; j < playground_matrix[i].size(); j++) {
+                cout << playground_matrix[i][j] << " ";
+            }
+            cout << endl;
+        }
+        cout << endl;*/
         for (int i = 0; i < playground_matrix.size(); i++) {
             for (int j = 0; j < playground_matrix[i].size(); j++) {
                 if (playground_matrix[i][j] == 1) {
-                    playground.push_back(Box({ i + 1.f,1.5f,j + 1.f }, { 1.f,3.f,1.f }));
+                    playground.push_back(Box({ i + 1.f,1.5f,j + 1.f }, 
+                                             { 1.f    ,3.f, 1.f }));
             
                 }
             }
@@ -164,6 +171,8 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
     {
         // TEST RENDERS
         //RenderMesh(meshes["box"], shaders["VertexNormal"], test_box.getModelMatrix());
+        //RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_sphere.getModelMatrix());
+
     }
 
     {
@@ -186,8 +195,8 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
                 bullets.erase(bullets.begin() + i);
             }
             else {
-                bullets[i].Move({1.f*deltaTimeSeconds,0.f,0.f });
-                bullets[i].ModifyRemainingDistance(-1.f*deltaTimeSeconds*3.f);
+                bullets[i].Move({5.f*deltaTimeSeconds,0.f,0.f });
+                //bullets[i].ModifyRemainingDistance(-1.f);
             }
         }
 
@@ -196,8 +205,9 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
             for (int j = 0; j < playground.size(); j++) {
                 if (CheckSpheresCollision({ bullets[i].getPosition().x, bullets[i].getPosition().y, bullets[i].getPosition().z,bullets[i].getRadius() },
                                           { playground[j].getPosition().x, playground[j].getPosition().y,playground[j].getPosition().z, PLAYGROUND_BOX_HITBOX_RADIUS})) {
-                    cout << "Collision on bullet " << i << endl;
-                    bullets.erase(bullets.begin() + i);
+                    cout << "Collision on bullet " << bullets[i].getPosition().x << " " << bullets[i].getPosition().y << " " << bullets[i].getPosition().z << endl;
+                    cout << "Collision on playground " << playground[j].getPosition().x << " " << playground[j].getPosition().y << " " << playground[j].getPosition().z << endl;
+                        bullets.erase(bullets.begin() + i);
                     break;
                 }
             }
@@ -224,10 +234,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
     }
 
 
-    {
-        // SPHERE test
-        RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_sphere.getModelMatrix());
-    }
+
 
     {
         // BULLETS RENDER 
@@ -374,7 +381,7 @@ void SurvivalMaze::OnKeyPress(int key, int mods)
     else if (key == GLFW_KEY_SPACE)
     {
         cout << "NICEEE" << endl;
-        bullets.push_back(Bullet({player.body.getPosition().x,player.body.getPosition().y-0.5f,player.body.getPosition().z}, 2.f));
+        bullets.push_back(Bullet({player.body.getPosition().x,player.body.getPosition().y,player.body.getPosition().z}, 0.5f));
     }
 }
 
