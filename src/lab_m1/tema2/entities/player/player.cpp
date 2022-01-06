@@ -36,6 +36,8 @@ Player::Player(float x, float y, float z):x(x),y(y),z(z){
 					  body.getPosition().y - 0.45f,
 					  body.getPosition().z - 0.f },			//position
 				     { 0.2f,0.2f,0.2f });			//sizes
+
+	this->health = 100;
 }
 
 Player::Player(){}
@@ -85,5 +87,9 @@ dimensionsTriplet Player::getLastMove() {
 dimensionsTriplet Player::getPosition() {
 	return { x = this->x,y = this->y,z = this->z };
 }
-
-
+float Player::getHealth() {
+	return this->health;
+}
+void Player::modifyHealth(float offset) {
+	this->health += offset;
+}

@@ -8,7 +8,7 @@ class Enemy {
 	float x, y, z, sizeX, sizeY, sizeZ;
 public:
 	Sphere body, left_eye, right_eye;
-
+	
 	Enemy();
 	Enemy(dimensionsTriplet, dimensionsTriplet);
 	~Enemy();

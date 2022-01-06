@@ -12,6 +12,7 @@ class Player {
 private:
 	float x, y, z;
 	dimensionsTriplet last_position;
+	float health;
 
 public: 
 	Player(float, float, float);
@@ -20,9 +21,12 @@ public:
 	void Move(float, float, float);
 	void setPosition(dimensionsTriplet);
 	void setLastPosition();
+	float getHealth();
+	void modifyHealth(float);
 	//void SaveCurrentPosition();
 	dimensionsTriplet getPosition();
 	dimensionsTriplet getLastMove();
 	Box body, head, left_leg, right_leg, right_arm, left_arm, left_palm, right_palm;
+	
 };
 #endif

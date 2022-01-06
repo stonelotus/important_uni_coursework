@@ -54,6 +54,7 @@ using namespace std;
         Enemy test_enemy;
         void DoPlayerObjectsCollisions();
         vector<Bullet>bullets;
+        vector<Enemy> enemies;
     };
 
 #endif

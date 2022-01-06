@@ -147,7 +147,11 @@ void SurvivalMaze::Init()
             }
         }
     }
-
+    
+    {
+        enemies.push_back(test_enemy);
+        enemies.push_back(Enemy({ -5.f,1.f,-5.f }, { 1.f,1.f,1.f }));
+    }
   
 
 
@@ -176,12 +180,36 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
         // TEST RENDERS
         //RenderMesh(meshes["box"], shaders["VertexNormal"], test_box.getModelMatrix());
         //RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_sphere.getModelMatrix());
-        RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_enemy.body.getModelMatrix());
-        RenderMesh(meshes["sphere"], shaders["Simple"], test_enemy.left_eye.getModelMatrix());
-        RenderMesh(meshes["sphere"], shaders["Simple"], test_enemy.right_eye.getModelMatrix());
+        //  RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_enemy.body.getModelMatrix());
+        //RenderMesh(meshes["sphere"], shaders["Simple"], test_enemy.left_eye.getModelMatrix());
+        //RenderMesh(meshes["sphere"], shaders["Simple"], test_enemy.right_eye.getModelMatrix());
 
     }
-
+    {
+        // Check player-enemy collision
+        for (int i = 0; i < enemies.size(); i++) {
+            if (CheckSpheresCollision({ player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, PLAYER_HITBOX_RADIUS },
+                { enemies[i].body.getPosition().x,enemies[i].body.getPosition().y ,enemies[i].body.getPosition().z,ENEMY_SIZE })) {
+                player.modifyHealth(-20);
+                cout << player.getHealth() << endl;
+                player.Move(-player.getLastMove().x*2, -player.getLastMove().y*2, -player.getLastMove().z*2);
+            }
+        }
+    }
+    {
+        // Check bullet-enemy collision
+        for (int i = 0; i < bullets.size(); i++) {
+            for (int j = 0; j < enemies.size(); j++) {
+                if (CheckSpheresCollision({ bullets[i].getPosition().x,bullets[i].getPosition().y, bullets[i].getPosition().z,BULLET_RADIUS },
+                                            {enemies[j].body.getPosition().x,enemies[j].body.getPosition().y,enemies[j].body.getPosition().z,ENEMY_SIZE-1.f})){
+                    cout << "Shot an enemy!!" << endl;
+                    bullets.erase(bullets.begin() + i);
+                    enemies.erase(enemies.begin() + j);
+                    break;
+                }
+            }
+        }
+    }
     {
         // Check player-maze collision
         for (int i = 0; i < playground.size(); i++) {
@@ -238,7 +266,14 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
         }
     }
 
-
+    {
+        // ENEMIES RENDER
+        for (int i = 0; i < enemies.size(); i++) {
+            RenderMesh(meshes["sphere"], shaders["VertexNormal"], enemies[i].body.getModelMatrix());
+            RenderMesh(meshes["sphere"], shaders["Simple"], enemies[i].left_eye.getModelMatrix());
+            RenderMesh(meshes["sphere"], shaders["Simple"], enemies[i].right_eye.getModelMatrix());
+        }
+    }
 
 
     {
@@ -385,8 +420,7 @@ void SurvivalMaze::OnKeyPress(int key, int mods)
 
     else if (key == GLFW_KEY_SPACE)
     {
-        cout << "NICEEE" << endl;
-        bullets.push_back(Bullet({player.body.getPosition().x,player.body.getPosition().y,player.body.getPosition().z}, 0.5f));
+        bullets.push_back(Bullet({player.body.getPosition().x,player.body.getPosition().y,player.body.getPosition().z}, BULLET_RADIUS));
     }
 }
 

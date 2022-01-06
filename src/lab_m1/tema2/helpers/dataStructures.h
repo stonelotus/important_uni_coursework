@@ -11,6 +11,7 @@
 #define PLAYGROUND_BOX_HITBOX_RADIUS 0.5f
 #define BULLETS_LIFE_DISTANCE 10.f
 #define ENEMY_SIZE 1.5f
+#define BULLET_RADIUS 0.5f
 typedef struct dimensionsTriplet {
 	float x, y, z;
 };
