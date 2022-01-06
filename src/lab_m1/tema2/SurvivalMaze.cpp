@@ -119,8 +119,12 @@ void SurvivalMaze::Init()
 
     player = Player(0, 0, 0);
     //box = Box(10.f);
-    test_sphere = Sphere({ 1.f,1.f,1.f }, 6.f);
-    test_box = Box({ 0.f,0.f,0.f }, { 1.f,1.f,1.f });
+    {
+        test_sphere = Sphere({ 1.f,1.f,1.f }, 6.f);
+        test_box = Box({ 0.f,0.f,0.f }, { 1.f,1.f,1.f });
+        test_enemy = Enemy({ -3.f,1.f,-3.f }, { 1.f,1.f,1.f });
+    }
+
     // playground maze creation
     {
         vector<vector<int>> playground_matrix;
@@ -172,6 +176,9 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
         // TEST RENDERS
         //RenderMesh(meshes["box"], shaders["VertexNormal"], test_box.getModelMatrix());
         //RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_sphere.getModelMatrix());
+        RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_enemy.body.getModelMatrix());
+        RenderMesh(meshes["sphere"], shaders["Simple"], test_enemy.left_eye.getModelMatrix());
+        RenderMesh(meshes["sphere"], shaders["Simple"], test_enemy.right_eye.getModelMatrix());
 
     }
 
@@ -196,7 +203,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
             }
             else {
                 bullets[i].Move({5.f*deltaTimeSeconds,0.f,0.f });
-                //bullets[i].ModifyRemainingDistance(-1.f);
+                bullets[i].ModifyRemainingDistance(-5.f*deltaTimeSeconds    );
             }
         }
 
@@ -205,9 +212,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
             for (int j = 0; j < playground.size(); j++) {
                 if (CheckSpheresCollision({ bullets[i].getPosition().x, bullets[i].getPosition().y, bullets[i].getPosition().z,bullets[i].getRadius() },
                                           { playground[j].getPosition().x, playground[j].getPosition().y,playground[j].getPosition().z, PLAYGROUND_BOX_HITBOX_RADIUS})) {
-                    cout << "Collision on bullet " << bullets[i].getPosition().x << " " << bullets[i].getPosition().y << " " << bullets[i].getPosition().z << endl;
-                    cout << "Collision on playground " << playground[j].getPosition().x << " " << playground[j].getPosition().y << " " << playground[j].getPosition().z << endl;
-                        bullets.erase(bullets.begin() + i);
+                    bullets.erase(bullets.begin() + i);
                     break;
                 }
             }

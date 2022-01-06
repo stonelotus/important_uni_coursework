@@ -10,6 +10,7 @@
 #include <random>
 #include "lab_m1/tema2/entities/sphere/sphere.h"
 #include "lab_m1/tema2/entities/bullet/bullet.h"
+#include "lab_m1/tema2/entities/enemy/enemy.h"
 using namespace std;
 
 
@@ -50,6 +51,7 @@ using namespace std;
         vector<Box> playground;
         Sphere test_sphere;
         Bullet test_bullet;
+        Enemy test_enemy;
         void DoPlayerObjectsCollisions();
         vector<Bullet>bullets;
     };
