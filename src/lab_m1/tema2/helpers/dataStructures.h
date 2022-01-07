@@ -12,6 +12,14 @@
 #define BULLETS_LIFE_DISTANCE 10.f
 #define ENEMY_SIZE 0.8f
 #define BULLET_RADIUS 0.2f
+#define PLAYGROUND_MATRIX_OFFSET 1.f
+#define ENEMY_ROUTES_DEPTH 3
+
+#define ENEMY_PATH_MARKER 3
+#define EMPTY_SPACE_MARKER 0
+#define WALL_MARKER 1
+#define ENEMY_MARKER 2
+
 typedef struct dimensionsTriplet {
 	float x, y, z;
 };

@@ -55,6 +55,8 @@ using namespace std;
         void DoPlayerObjectsCollisions();
         vector<Bullet>bullets;
         vector<Enemy> enemies;
+        vector<vector<int>> playground_matrix;
+
     };
 
 #endif

@@ -88,7 +88,31 @@ void CreateRandomMaze(int n, int m, vector<vector<int>> &maze) {
     dfs(3, 3, maze);    //TODO make random starting algorithm point
 }
 ///////////////////////////////
-
+void LimitedFillerDFS(vector<vector<int>>& playground_matrix, int x, int y, int remaining_depth)
+{
+    if (playground_matrix[x][y] == 0) {
+        playground_matrix[x][y] = ENEMY_PATH_MARKER;
+    }
+    if (remaining_depth <= 0 || playground_matrix[x][y] == WALL_MARKER) {
+        return;
+    }
+    for (int i = 0; i < 4; i++) {
+        if (x+di[i] < playground_matrix.size()-1 && y+dj[i] < playground_matrix.size() - 1 && x+di[i] >=0 && y+dj[i] >= 0) {
+            LimitedFillerDFS(playground_matrix, x + di[i], y + dj[i], remaining_depth - 1);
+        }
+    }
+}
+void SetupEnemiesRoutes(vector<vector<int>>& playground_matrix, int path_depth)
+{
+    for (int i = 0; i < playground_matrix.size(); i++) {
+        for (int j = 0; j < playground_matrix[i].size(); j++) {
+            if (playground_matrix[i][j] == ENEMY_MARKER) {
+                LimitedFillerDFS(playground_matrix, i, j, path_depth);
+            }
+        }
+    }
+   
+}
 
 SurvivalMaze::~SurvivalMaze()
 {
@@ -127,7 +151,6 @@ void SurvivalMaze::Init()
 
     // playground maze creation
     {
-        vector<vector<int>> playground_matrix;
         CreateRandomMaze(20, 20, playground_matrix);
         
        /* cout << "Nice matrix\n";
@@ -146,14 +169,25 @@ void SurvivalMaze::Init()
                                              { 1.f    ,3.f, 1.f }));
                 }
                 else {
-                    possible_enemy_locations.push_back({ i+1.f,1.5f,j+1.f });
+                    possible_enemy_locations.push_back({ i+ PLAYGROUND_MATRIX_OFFSET,1.5f,j+ PLAYGROUND_MATRIX_OFFSET });
                 }
             }
         }
 
-        for (int i = 0; i < possible_enemy_locations.size() / 32; i++) {
+        for (int i = 0; i < possible_enemy_locations.size() / possible_enemy_locations.size(); i++) {
             int random_enemy_location_index= rand() % (possible_enemy_locations.size() - 1);
             enemies.push_back(Enemy(possible_enemy_locations[random_enemy_location_index], { ENEMY_SIZE,ENEMY_SIZE,ENEMY_SIZE }));
+            playground_matrix[possible_enemy_locations[random_enemy_location_index].x - PLAYGROUND_MATRIX_OFFSET][possible_enemy_locations[random_enemy_location_index].z - PLAYGROUND_MATRIX_OFFSET] = ENEMY_MARKER;
+          
+        }
+
+        SetupEnemiesRoutes(playground_matrix, ENEMY_ROUTES_DEPTH);
+
+        for (int i = 0; i < playground_matrix.size(); i++) {
+            for (int j = 0; j < playground_matrix[i].size(); j++) {
+                cout << playground_matrix[i][j] << " ";
+            }
+            cout << endl;
         }
     }
     
@@ -208,8 +242,10 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
         // Check bullet-enemy collision
         for (int i = 0; i < bullets.size(); i++) {
             for (int j = 0; j < enemies.size(); j++) {
-                if (CheckSpheresCollision({ bullets[i].getPosition().x,bullets[i].getPosition().y, bullets[i].getPosition().z,BULLET_RADIUS },
-                                            {enemies[j].body.getPosition().x,enemies[j].body.getPosition().y,enemies[j].body.getPosition().z,ENEMY_SIZE-1.f})){
+                if (CheckSpheresCollision(
+                    { bullets[i].getPosition().x,bullets[i].getPosition().y, bullets[i].getPosition().z,BULLET_RADIUS },
+                    {enemies[j].body.getPosition().x,enemies[j].body.getPosition().y,enemies[j].body.getPosition().z,ENEMY_SIZE-1.f})){
+                    
                     bullets.erase(bullets.begin() + i);
                     enemies.erase(enemies.begin() + j);
                     break;
@@ -220,7 +256,8 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
     {
         // Check player-maze collision
         for (int i = 0; i < playground.size(); i++) {
-            if (CheckSpheresCollision({ player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, PLAYER_HITBOX_RADIUS },
+            if (CheckSpheresCollision(
+                { player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, PLAYER_HITBOX_RADIUS },
                 { playground[i].getPosition().x,playground[i].getPosition().y ,playground[i].getPosition().z,PLAYGROUND_BOX_HITBOX_RADIUS })) {
                 cout << "COLLISION BOIIII " << endl;
                 player.Move( -player.getLastMove().x, -player.getLastMove().y, -player.getLastMove().z );
@@ -238,7 +275,40 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
             }
             else {
                 bullets[i].Move({5.f*deltaTimeSeconds,0.f,0.f });
-                bullets[i].ModifyRemainingDistance(-5.f*deltaTimeSeconds    );
+                bullets[i].ModifyRemainingDistance(-5.f*deltaTimeSeconds);
+            }
+        }
+
+        {
+            for (int i = 0; i < enemies.size(); i++) {
+                dimensionsTriplet enemy_position = enemies[i].body.getPosition();
+                int enemy_matrix_i = (int)round(enemy_position.x - PLAYGROUND_MATRIX_OFFSET);
+                int enemy_matrix_j = (int)round(enemy_position.z - PLAYGROUND_MATRIX_OFFSET);
+  
+                if (enemy_matrix_i < 0 || enemy_matrix_j < 0 || enemy_matrix_i >= playground_matrix.size() || enemy_matrix_j >= playground_matrix[enemy_matrix_i].size()) {
+                }
+                else {
+             
+                    if (playground_matrix[enemy_matrix_i + di[enemies[i].getDirection()]][enemy_matrix_j + dj[enemies[i].getDirection()]] == ENEMY_PATH_MARKER 
+                        || playground_matrix[enemy_matrix_i + di[enemies[i].getDirection()]][enemy_matrix_j + dj[enemies[i].getDirection()]] == ENEMY_MARKER){
+                        enemies[i].Move({ deltaTimeSeconds * di[enemies[i].getDirection()],0.f,deltaTimeSeconds * dj[enemies[i].getDirection()] });
+                    }
+                    else {
+                        cout << enemy_matrix_i << " " << enemy_matrix_j << endl;
+                        bool meh = (playground_matrix[enemy_matrix_i + di[enemies[i].getDirection()]][enemy_matrix_j + dj[enemies[i].getDirection()]] == ENEMY_PATH_MARKER
+                            || playground_matrix[enemy_matrix_i + di[enemies[i].getDirection()]][enemy_matrix_j + dj[enemies[i].getDirection()]] == ENEMY_MARKER);
+
+                           /* while (meh == false) {
+                                cout << "fuck me\n";
+
+                                enemies[i].setDirection(enemies[i].getDirection() + 1);
+                            }*/
+                        enemies[i].setDirection(enemies[i].getDirection() + 1);
+
+                         //enemies[i].Move({ deltaTimeSeconds * di[enemies[i].getDirection()],0.f,deltaTimeSeconds * dj[enemies[i].getDirection()] });
+
+                    }
+                }
             }
         }
 
@@ -321,7 +391,7 @@ void SurvivalMaze::OnInputUpdate(float deltaTime, int mods)
 {
     // TODO(student): Add transformation logic
           // Check player-maze collision
-  
+    deltaTime = deltaTime * 3;
 
     if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) {
         if (window->KeyHold(GLFW_KEY_RIGHT)) {
