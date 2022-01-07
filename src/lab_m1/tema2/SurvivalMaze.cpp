@@ -129,6 +129,7 @@ void SurvivalMaze::Init()
     {
         vector<vector<int>> playground_matrix;
         CreateRandomMaze(20, 20, playground_matrix);
+        
        /* cout << "Nice matrix\n";
         for (int i = 0; i < playground_matrix.size(); i++) {
             for (int j = 0; j < playground_matrix[i].size(); j++) {
@@ -137,14 +138,22 @@ void SurvivalMaze::Init()
             cout << endl;
         }
         cout << endl;*/
+        vector <dimensionsTriplet> possible_enemy_locations;
         for (int i = 0; i < playground_matrix.size(); i++) {
             for (int j = 0; j < playground_matrix[i].size(); j++) {
                 if (playground_matrix[i][j] == 1) {
                     playground.push_back(Box({ i + 1.f,1.5f,j + 1.f }, 
                                              { 1.f    ,3.f, 1.f }));
-            
+                }
+                else {
+                    possible_enemy_locations.push_back({ i+1.f,1.5f,j+1.f });
                 }
             }
+        }
+
+        for (int i = 0; i < possible_enemy_locations.size() / 32; i++) {
+            int random_enemy_location_index= rand() % (possible_enemy_locations.size() - 1);
+            enemies.push_back(Enemy(possible_enemy_locations[random_enemy_location_index], { ENEMY_SIZE,ENEMY_SIZE,ENEMY_SIZE }));
         }
     }
     
@@ -189,9 +198,8 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
         // Check player-enemy collision
         for (int i = 0; i < enemies.size(); i++) {
             if (CheckSpheresCollision({ player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, PLAYER_HITBOX_RADIUS },
-                { enemies[i].body.getPosition().x,enemies[i].body.getPosition().y ,enemies[i].body.getPosition().z,ENEMY_SIZE })) {
+                                      { enemies[i].body.getPosition().x,enemies[i].body.getPosition().y ,enemies[i].body.getPosition().z,ENEMY_SIZE })) {
                 player.modifyHealth(-20);
-                cout << player.getHealth() << endl;
                 player.Move(-player.getLastMove().x*2, -player.getLastMove().y*2, -player.getLastMove().z*2);
             }
         }
@@ -202,7 +210,6 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
             for (int j = 0; j < enemies.size(); j++) {
                 if (CheckSpheresCollision({ bullets[i].getPosition().x,bullets[i].getPosition().y, bullets[i].getPosition().z,BULLET_RADIUS },
                                             {enemies[j].body.getPosition().x,enemies[j].body.getPosition().y,enemies[j].body.getPosition().z,ENEMY_SIZE-1.f})){
-                    cout << "Shot an enemy!!" << endl;
                     bullets.erase(bullets.begin() + i);
                     enemies.erase(enemies.begin() + j);
                     break;
@@ -303,7 +310,7 @@ void SurvivalMaze::FrameEnd()
 void SurvivalMaze::DoPlayerObjectsCollisions() {
     for (int i = 0; i < playground.size(); i++) {
         if (CheckSpheresCollision({ player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, PLAYER_HITBOX_RADIUS },
-            { playground[i].getPosition().x,playground[i].getPosition().y ,playground[i].getPosition().z, PLAYGROUND_BOX_HITBOX_RADIUS })) {
+                                  { playground[i].getPosition().x,playground[i].getPosition().y ,playground[i].getPosition().z, PLAYGROUND_BOX_HITBOX_RADIUS })) {
             cout << "COLLISION BOIIII " << endl;
             player.Move(-player.getLastMove().x, -player.getLastMove().y, -player.getLastMove().z);
         }
