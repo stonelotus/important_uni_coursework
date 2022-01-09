@@ -140,7 +140,7 @@ void SurvivalMaze::Init()
     Mesh* mesh2 = new Mesh("quad");
     mesh2->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "quad.obj");
     meshes[mesh2->GetMeshID()] = mesh2;
-
+    timpEnemy = 10000;
     
     {
         Mesh* mesh = new Mesh("sphere");
@@ -155,6 +155,14 @@ void SurvivalMaze::Init()
         shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "Tema2", "shaders", "FragmentShader.glsl"), GL_FRAGMENT_SHADER);
         shader->CreateAndLink();
         shaders[shader->GetName()] = shader;
+    }
+    {
+        // EPIC SHADER
+        Shader* shader2 = new Shader("EpicShader");
+        shader2->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "Tema2", "shaders", "VertexShader2.glsl"), GL_VERTEX_SHADER);
+        shader2->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "Tema2", "shaders", "FragmentShader2.glsl"), GL_FRAGMENT_SHADER);
+        shader2->CreateAndLink();
+        shaders[shader2->GetName()] = shader2;
     }
     
     // Initialize tx, ty and tz (the translation steps)
@@ -306,6 +314,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
             }
         }
     }
+
     {
         // Check bullet-enemy collision
         for (int i = 0; i < bullets.size(); i++) {
@@ -314,9 +323,11 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
                     { bullets[i].getPosition().x,bullets[i].getPosition().y, bullets[i].getPosition().z,BULLET_RADIUS },
                     {enemies[j].body.getPosition().x,enemies[j].body.getPosition().y,enemies[j].body.getPosition().z,ENEMY_SIZE-1.f})){
                     
+
+                    enemies[j].setCountdown(enemies[j].getCountdown() - deltaTimeSeconds * 2);
                     bullets.erase(bullets.begin() + i);
-                    enemies.erase(enemies.begin() + j);
                     break;
+                  
                 }
             }
         }
@@ -413,9 +424,25 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
     {
         // ENEMIES RENDER
         for (int i = 0; i < enemies.size(); i++) {
-            RenderSimpleMesh(meshes["sphere"], shaders["VertexNormal"], enemies[i].body.getModelMatrix(), glm::vec3(0.5f, 0.5f, 0.5f));
-            RenderSimpleMesh(meshes["sphere"], shaders["Simple"], enemies[i].left_eye.getModelMatrix(),glm::vec3(0.5f,0.5f,0.5f));
-            RenderSimpleMesh(meshes["sphere"], shaders["Simple"], enemies[i].right_eye.getModelMatrix(), glm::vec3(0.5f, 0.5f, 0.5f));
+            if (enemies[i].getCountdown() <= 0) {
+                cout << "Fuck off" << endl;
+                enemies.erase(enemies.begin() + i);
+                break;
+            }
+            else if (enemies[i].getCountdown() == 2) {
+                RenderSimpleMesh(meshes["sphere"], shaders["VertexNormal"], enemies[i].body.getModelMatrix(), glm::vec3(0.5f, 0.5f, 0.5f));
+                RenderSimpleMesh(meshes["sphere"], shaders["Simple"], enemies[i].left_eye.getModelMatrix(), glm::vec3(0.5f, 0.5f, 0.5f));
+                RenderSimpleMesh(meshes["sphere"], shaders["Simple"], enemies[i].right_eye.getModelMatrix(), glm::vec3(0.5f, 0.5f, 0.5f));
+            }
+            else {
+                cout << "Epic rendering...." << endl;
+
+                RenderEpicMesh(meshes["sphere"], shaders["EpicShader"], enemies[i].body.getModelMatrix(), enemies[i].getCountdown());
+                RenderEpicMesh(meshes["sphere"], shaders["EpicShader"], enemies[i].left_eye.getModelMatrix(), enemies[i].getCountdown());
+                RenderEpicMesh(meshes["sphere"], shaders["EpicShader"], enemies[i].right_eye.getModelMatrix(), enemies[i].getCountdown());
+                enemies[i].setCountdown(enemies[i].getCountdown() - deltaTimeSeconds * 2);
+            }
+            
         }
     }
 
@@ -472,6 +499,50 @@ void SurvivalMaze::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4&
     glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_INT, 0);
 }
 
+void SurvivalMaze::RenderEpicMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix,float time)
+{
+    if (!mesh || !shader || !shader->GetProgramID())
+        return;
+
+    // Render an object using the specified shader and the specified position
+    glUseProgram(shader->program);
+
+    // TODO(student): Get shader location for uniform mat4 "Model"
+
+    int model_location = glGetUniformLocation(shader->GetProgramID(), "Model");
+
+    // TODO(student): Set shader uniform "Model" to modelMatrix
+
+    glUniformMatrix4fv(model_location, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+    // TODO(student): Get shader location for uniform mat4 "View"
+
+    GLint location_View = glGetUniformLocation(shader->GetProgramID(), "View");
+
+    // TODO(student): Set shader uniform "View" to viewMatrix
+    glm::mat4 viewMatrix = camera->GetViewMatrix();
+
+    glUniformMatrix4fv(location_View, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+    // TODO(student): Get shader location for uniform mat4 "Projection"
+
+    GLint location_Projection = glGetUniformLocation(shader->GetProgramID(), "Projection");
+
+    // TODO(student): Set shader uniform "Projection" to projectionMatrix
+    //glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
+
+    glUniformMatrix4fv(location_Projection, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+    GLint timeLocation = glGetUniformLocation(shader->GetProgramID(), "EnemyTime");
+
+    // Set shader uniform "Time" to elapsed time
+    glUniform1f(timeLocation, time);
+
+
+    // Draw the object
+    glBindVertexArray(mesh->GetBuffers()->m_VAO);
+    glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_INT, 0);
+}
 
 /*
  *  These are callback functions. To find more about callbacks and

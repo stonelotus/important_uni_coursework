@@ -81,7 +81,7 @@ void Player::setPosition(dimensionsTriplet position) {
 void Player::setLastPosition() {
 	this->last_position = { this->x,this->y,this->z };
 }
-dimensionsTriplet Player::getLastMove() {
+dimensionsTriplet Player::getLastMove	() {
 	return this->last_position;
 }
 dimensionsTriplet Player::getPosition() {

@@ -12,6 +12,6 @@ float Bullet::getRemainingDistance() {
 void Bullet::ModifyRemainingDistance(float offset) {
 	this->remaining_distance += offset;
 }
-float Bullet :: getAngle() {
+float Bullet::getAngle() {
 	return this->angle;
 }

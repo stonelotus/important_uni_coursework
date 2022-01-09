@@ -7,8 +7,17 @@ Enemy::Enemy(dimensionsTriplet position, dimensionsTriplet size):x(position.x), 
 	left_eye = Sphere({ position.x + ENEMY_SIZE * 0.42f,position.y + ENEMY_SIZE*0.2f,position.z - ENEMY_SIZE*0.3f }, ENEMY_SIZE/5);
 	right_eye = Sphere({ position.x + ENEMY_SIZE * 0.42f,position.y + ENEMY_SIZE*0.2f,position.z + ENEMY_SIZE*0.3f }, ENEMY_SIZE/5);
 	this->current_direction = 0;
+	this->deathcountdown = 2;
+
 };
 Enemy::~Enemy() {};
+float Enemy::getCountdown() {
+	return this->deathcountdown;
+ }
+
+void Enemy::setCountdown(float t) {
+	this->deathcountdown = t;
+}
 
 void Enemy::Move(dimensionsTriplet offset) {
 	this->x += offset.x;

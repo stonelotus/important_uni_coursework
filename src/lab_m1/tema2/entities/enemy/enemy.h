@@ -6,7 +6,8 @@
 #include <iostream>
 class Enemy {
 	float x, y, z, sizeX, sizeY, sizeZ;
-	float current_direction;;
+	float deathcountdown;
+	float current_direction;
 public:
 	Sphere body, left_eye, right_eye;
 	
@@ -16,6 +17,8 @@ public:
 	void Move(dimensionsTriplet);
 	int getDirection();
 	void setDirection(int);
+	float getCountdown();
+	void setCountdown(float);
 
 };
 #endif

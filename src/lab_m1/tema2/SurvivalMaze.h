@@ -28,6 +28,7 @@ using namespace std;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
         void RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix, const glm::vec3& color);
+        void RenderEpicMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix,float time);
         void OnInputUpdate(float deltaTime, int mods) override;
         void OnKeyPress(int key, int mods) override;
         void OnKeyRelease(int key, int mods) override;
@@ -43,7 +44,7 @@ using namespace std;
         float scaleX, scaleY, scaleZ;
         float angularStepOX, angularStepOY, angularStepOZ;
         GLenum polygonMode;
-
+        int timpEnemy;
         //camera
         implemented::Camera* camera;
         glm::mat4 projectionMatrix;
