@@ -1,8 +1,9 @@
 #include "lab_m1/tema2/entities/bullet/bullet.h"
 
 Bullet::Bullet(){}
-Bullet::Bullet(dimensionsTriplet position, float radius):Sphere(position,radius) {
+Bullet::Bullet(dimensionsTriplet position, float radius, float angle):Sphere(position,radius) {
 	this->remaining_distance = BULLETS_LIFE_DISTANCE;
+	this->angle = angle;
 }
 Bullet::~Bullet() {};
 float Bullet::getRemainingDistance() {
@@ -10,4 +11,7 @@ float Bullet::getRemainingDistance() {
 }
 void Bullet::ModifyRemainingDistance(float offset) {
 	this->remaining_distance += offset;
+}
+float Bullet :: getAngle() {
+	return this->angle;
 }

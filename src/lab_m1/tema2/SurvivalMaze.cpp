@@ -135,18 +135,33 @@ void SurvivalMaze::Init()
         mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "sphere.obj");
         meshes[mesh->GetMeshID()] = mesh;
     }
+
+    //Simple Shader 
+    {
+        Shader* shader = new Shader("MazeShader");
+        shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "Tema2", "shaders", "VertexShader.glsl"), GL_VERTEX_SHADER);
+        shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "Tema2", "shaders", "FragmentShader.glsl"), GL_FRAGMENT_SHADER);
+        shader->CreateAndLink();
+        shaders[shader->GetName()] = shader;
+    }
     
     // Initialize tx, ty and tz (the translation steps)
     translateX = 0;
     translateY = 0;
     translateZ = 0;
 
-    player = Player(0, 0, 0);
+    player = Player(-4, 0, -2);
     //box = Box(10.f);
     {
-        test_sphere = Sphere({ 1.f,1.f,1.f }, 6.f);
-        test_box = Box({ 0.f,0.f,0.f }, { 1.f,1.f,1.f });
-        test_enemy = Enemy({ -3.f,1.f,-3.f }, { 1.f,1.f,1.f });
+        //test_sphere = Sphere({ 1.f,1.f,1.f }, 6.f);
+        //test_box = Box({ 0.f,0.f,0.f }, { 1.f,1.f,1.f });
+        //test_enemy = Enemy({ -3.f,1.f,-3.f }, { 1.f,1.f,1.f });
+    }
+
+    {   isFirstPerson = false;
+        camera = new implemented::Camera();
+        camera->Set(glm::vec3(player.getPosition().x, player.getPosition().y, player.getPosition().z), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
+        projectionMatrix = glm::perspective(RADIANS(55.0f), window->props.aspectRatio, 0.01f, 200.0f);
     }
 
     // playground maze creation
@@ -165,37 +180,57 @@ void SurvivalMaze::Init()
         for (int i = 0; i < playground_matrix.size(); i++) {
             for (int j = 0; j < playground_matrix[i].size(); j++) {
                 if (playground_matrix[i][j] == 1) {
-                    playground.push_back(Box({ i + 1.f,1.5f,j + 1.f }, 
+                    playground.push_back(Box({ i + PLAYGROUND_MATRIX_OFFSET,1.5f,j + PLAYGROUND_MATRIX_OFFSET },
                                              { 1.f    ,3.f, 1.f }));
+                    float c1 = (rand() % 1000) / 1000.f;
+                    float c2 = (rand() % 1000) / 1000.f;
+                    float c3 = (rand() % 1000) / 1000.f;
+                    cout << c1 << " " << c2 << " " << c3 << endl;
+                    playground[playground.size() - 1].setShaderColor(glm::vec3(c1, c2, c3));
                 }
                 else {
+                   /* playground.push_back(Box({ i + 1.f,0.f,j + 1.f },
+                                             { 1.f    ,0.2f, 1.f }));
+                    playground[playground.size() - 1].setShaderName("Simple");*/
                     possible_enemy_locations.push_back({ i+ PLAYGROUND_MATRIX_OFFSET,1.5f,j+ PLAYGROUND_MATRIX_OFFSET });
-                }
+               
+ }
             }
         }
 
-        for (int i = 0; i < possible_enemy_locations.size() / possible_enemy_locations.size(); i++) {
+        for (int i = 0; i < possible_enemy_locations.size() / 32; i++) {
             int random_enemy_location_index= rand() % (possible_enemy_locations.size() - 1);
             enemies.push_back(Enemy(possible_enemy_locations[random_enemy_location_index], { ENEMY_SIZE,ENEMY_SIZE,ENEMY_SIZE }));
-            playground_matrix[possible_enemy_locations[random_enemy_location_index].x - PLAYGROUND_MATRIX_OFFSET][possible_enemy_locations[random_enemy_location_index].z - PLAYGROUND_MATRIX_OFFSET] = ENEMY_MARKER;
           
+            int position_i = possible_enemy_locations[random_enemy_location_index].x - PLAYGROUND_MATRIX_OFFSET;
+            int position_j = possible_enemy_locations[random_enemy_location_index].z - PLAYGROUND_MATRIX_OFFSET;
+            cout << "Enemy added on: " << possible_enemy_locations[random_enemy_location_index].x << " " << possible_enemy_locations[random_enemy_location_index].z << endl;
+            playground_matrix[position_i][position_j] = ENEMY_MARKER;
+      
         }
 
         SetupEnemiesRoutes(playground_matrix, ENEMY_ROUTES_DEPTH);
 
         for (int i = 0; i < playground_matrix.size(); i++) {
             for (int j = 0; j < playground_matrix[i].size(); j++) {
-                cout << playground_matrix[i][j] << " ";
+                if (playground_matrix[i][j] == ENEMY_MARKER || playground_matrix[i][j] == ENEMY_PATH_MARKER) {
+                    playground.push_back(Box({ i + PLAYGROUND_MATRIX_OFFSET,0.f, j + PLAYGROUND_MATRIX_OFFSET },
+                        { 1.f    ,0.2f, 1.f }));
+                 
+                    playground[playground.size() - 1].setShaderColor(glm::vec3(0.f,0.f,0.f));
+                }
             }
             cout << endl;
         }
     }
     
     {
-        enemies.push_back(test_enemy);
-        enemies.push_back(Enemy({ -5.f,1.f,-5.f }, { 1.f,1.f,1.f }));
+        enemies.push_back(Enemy({ -2.f,1.f,-2.f }, { 1.f,1.f,1.f }));
     }
   
+    {
+        amazing_rotate_angle = 0.f;
+    }
 
 
 }
@@ -218,11 +253,19 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
     glLineWidth(3);
     glPointSize(5);
     glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
+    
+    if (isFirstPerson) {
+        camera->position = glm::vec3(player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z);
+    }
+    else {
+        camera->position = glm::vec3(player.body.getPosition().x, player.body.getPosition().y+5.f, player.body.getPosition().z - 3.5f);
+    }
+    
 
     {
         // TEST RENDERS
-        //RenderMesh(meshes["box"], shaders["VertexNormal"], test_box.getModelMatrix());
-        //RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_sphere.getModelMatrix());
+        //RenderSimpleMesh(meshes["box"], shaders["VertexNormal"], test_box.getModelMatrix(),glm::vec3(1,0,0));
+       // RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_sphere.getModelMatrix());
         //  RenderMesh(meshes["sphere"], shaders["VertexNormal"], test_enemy.body.getModelMatrix());
         //RenderMesh(meshes["sphere"], shaders["Simple"], test_enemy.left_eye.getModelMatrix());
         //RenderMesh(meshes["sphere"], shaders["Simple"], test_enemy.right_eye.getModelMatrix());
@@ -274,41 +317,35 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
                 bullets.erase(bullets.begin() + i);
             }
             else {
-                bullets[i].Move({5.f*deltaTimeSeconds,0.f,0.f });
+                bullets[i].Move({sin(bullets[i].getAngle()) * deltaTimeSeconds,0.f,cos(bullets[i].getAngle()) * deltaTimeSeconds });
                 bullets[i].ModifyRemainingDistance(-5.f*deltaTimeSeconds);
             }
         }
 
+
         {
+            ////ENEMIES MOVE
             for (int i = 0; i < enemies.size(); i++) {
                 dimensionsTriplet enemy_position = enemies[i].body.getPosition();
+                //cout << enemy_position.x << " " << enemy_position.z << endl;
                 int enemy_matrix_i = (int)round(enemy_position.x - PLAYGROUND_MATRIX_OFFSET);
                 int enemy_matrix_j = (int)round(enemy_position.z - PLAYGROUND_MATRIX_OFFSET);
-  
-                if (enemy_matrix_i < 0 || enemy_matrix_j < 0 || enemy_matrix_i >= playground_matrix.size() || enemy_matrix_j >= playground_matrix[enemy_matrix_i].size()) {
+
+                int current_enemy_direction = enemies[i].getDirection();
+                if (enemy_matrix_i + di[current_enemy_direction]  < playground_matrix.size() && enemy_matrix_i + di[current_enemy_direction] >= 0 &&
+                    enemy_matrix_j + dj[current_enemy_direction]  < playground_matrix[enemy_matrix_i + di[current_enemy_direction]].size() -1 &&
+                    enemy_matrix_j + dj[current_enemy_direction] >= 0 &&
+                    (
+                    playground_matrix[enemy_matrix_i + di[current_enemy_direction]][enemy_matrix_j + dj[current_enemy_direction]] == ENEMY_MARKER 
+                    || playground_matrix[enemy_matrix_i + di[current_enemy_direction]][enemy_matrix_j + dj[current_enemy_direction]] == ENEMY_PATH_MARKER) ){
+                    enemies[i].Move({ deltaTimeSeconds * di[current_enemy_direction], 0.f, deltaTimeSeconds * dj[current_enemy_direction] });
+
                 }
                 else {
-             
-                    if (playground_matrix[enemy_matrix_i + di[enemies[i].getDirection()]][enemy_matrix_j + dj[enemies[i].getDirection()]] == ENEMY_PATH_MARKER 
-                        || playground_matrix[enemy_matrix_i + di[enemies[i].getDirection()]][enemy_matrix_j + dj[enemies[i].getDirection()]] == ENEMY_MARKER){
-                        enemies[i].Move({ deltaTimeSeconds * di[enemies[i].getDirection()],0.f,deltaTimeSeconds * dj[enemies[i].getDirection()] });
-                    }
-                    else {
-                        cout << enemy_matrix_i << " " << enemy_matrix_j << endl;
-                        bool meh = (playground_matrix[enemy_matrix_i + di[enemies[i].getDirection()]][enemy_matrix_j + dj[enemies[i].getDirection()]] == ENEMY_PATH_MARKER
-                            || playground_matrix[enemy_matrix_i + di[enemies[i].getDirection()]][enemy_matrix_j + dj[enemies[i].getDirection()]] == ENEMY_MARKER);
-
-                           /* while (meh == false) {
-                                cout << "fuck me\n";
-
-                                enemies[i].setDirection(enemies[i].getDirection() + 1);
-                            }*/
-                        enemies[i].setDirection(enemies[i].getDirection() + 1);
-
-                         //enemies[i].Move({ deltaTimeSeconds * di[enemies[i].getDirection()],0.f,deltaTimeSeconds * dj[enemies[i].getDirection()] });
-
-                    }
+                    enemies[i].setDirection(current_enemy_direction + 1);
                 }
+  
+                
             }
         }
 
@@ -326,29 +363,34 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
     
 
     {   //PLAYER RENDER
-        RenderMesh(meshes["box"], shaders["VertexNormal"], player.body.getModelMatrix());   // body
-        RenderMesh(meshes["box"], shaders["VertexNormal"], player.head.getModelMatrix());   // head
-        RenderMesh(meshes["box"], shaders["VertexNormal"], player.left_leg.getModelMatrix());    // left_leg
-        RenderMesh(meshes["box"], shaders["VertexNormal"], player.right_leg.getModelMatrix());   // right_leg
-        RenderMesh(meshes["box"], shaders["VertexNormal"], player.left_arm.getModelMatrix());    // left_arm
-        RenderMesh(meshes["box"], shaders["VertexNormal"], player.right_arm.getModelMatrix());   // right_arm
-        RenderMesh(meshes["box"], shaders["Simple"], player.left_palm.getModelMatrix());   // right_arm
-        RenderMesh(meshes["box"], shaders["Simple"], player.right_palm.getModelMatrix());   // right_arm
+        if (!isFirstPerson) {
+            RenderSimpleMesh(meshes["box"], shaders["MazeShader"], player.body.getModelMatrix(), glm::vec3(1, 0, 1));   // body
+            RenderSimpleMesh(meshes["box"], shaders["MazeShader"], player.head.getModelMatrix(), glm::vec3(1, 0.5, 1));   // head
+            RenderSimpleMesh(meshes["box"], shaders["MazeShader"], player.left_leg.getModelMatrix(), glm::vec3(0, 0, 1));    // left_leg
+            RenderSimpleMesh(meshes["box"], shaders["MazeShader"], player.right_leg.getModelMatrix(), glm::vec3(0.1, 0, 1));   // right_leg
+            RenderSimpleMesh(meshes["box"], shaders["MazeShader"], player.left_arm.getModelMatrix(), glm::vec3(0.2, 0, 1));    // left_arm
+            RenderSimpleMesh(meshes["box"], shaders["MazeShader"], player.right_arm.getModelMatrix(), glm::vec3(0.3, 0, 1));   // right_arm
+            RenderSimpleMesh(meshes["box"], shaders["MazeShader"], player.left_palm.getModelMatrix(), glm::vec3(0.4, 0, 1));   // right_arm
+            RenderSimpleMesh(meshes["box"], shaders["MazeShader"], player.right_palm.getModelMatrix(), glm::vec3(0.5, 0, 1));   // right_arm
+
+        }
     }
 
     {
         // MAZE RENDERING
         for (int i = 0; i < playground.size(); i++) {
-            RenderMesh(meshes["box"], shaders["VertexNormal"], playground[i].getModelMatrix());;  // body
+            //RenderMesh(meshes["box"], shaders[playground[i].getShaderName()], playground[i].getModelMatrix());;  // body
+             RenderSimpleMesh(meshes["box"], shaders["MazeShader"], playground[i].getModelMatrix(),playground[i].getShaderColor());  // body
+
         }
     }
 
     {
         // ENEMIES RENDER
         for (int i = 0; i < enemies.size(); i++) {
-            RenderMesh(meshes["sphere"], shaders["VertexNormal"], enemies[i].body.getModelMatrix());
-            RenderMesh(meshes["sphere"], shaders["Simple"], enemies[i].left_eye.getModelMatrix());
-            RenderMesh(meshes["sphere"], shaders["Simple"], enemies[i].right_eye.getModelMatrix());
+            RenderSimpleMesh(meshes["sphere"], shaders["VertexNormal"], enemies[i].body.getModelMatrix(), glm::vec3(0.5f, 0.5f, 0.5f));
+            RenderSimpleMesh(meshes["sphere"], shaders["Simple"], enemies[i].left_eye.getModelMatrix(),glm::vec3(0.5f,0.5f,0.5f));
+            RenderSimpleMesh(meshes["sphere"], shaders["Simple"], enemies[i].right_eye.getModelMatrix(), glm::vec3(0.5f, 0.5f, 0.5f));
         }
     }
 
@@ -356,7 +398,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
     {
         // BULLETS RENDER 
         for (int i = 0; i < bullets.size(); i++) {
-            RenderMesh(meshes["sphere"], shaders["VertexNormal"], bullets[i].getModelMatrix());
+            RenderSimpleMesh(meshes["sphere"], shaders["VertexNormal"], bullets[i].getModelMatrix(), glm::vec3(0.5f, 0.5f, 0.5f));
         }
     }
 
@@ -368,7 +410,41 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
 
 void SurvivalMaze::FrameEnd()
 {
-    DrawCoordinateSystem();
+    //DrawCoordinateSystem();
+
+    DrawCoordinateSystem(camera->GetViewMatrix(), projectionMatrix);
+}
+
+void SurvivalMaze::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix, const glm::vec3& color)
+{
+    if (!mesh || !shader || !shader->GetProgramID())
+        return;
+
+    shader->Use();
+
+    GLint object_clr = glGetUniformLocation(shader->program, "object_color");
+    glUniform3fv(object_clr, 1, glm::value_ptr(color));
+
+    GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
+    glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+    // Bind view matrix
+    // TODO camera
+    glm::mat4 viewMatrix = camera->GetViewMatrix();
+    //glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
+    int loc_view_matrix = glGetUniformLocation(shader->program, "View");
+    glUniformMatrix4fv(loc_view_matrix, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+    // Bind projection matrix
+    //TODO camera
+    //glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
+    int loc_projection_matrix = glGetUniformLocation(shader->program, "Projection");
+    glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    
+
+    // Draw the object
+    glBindVertexArray(mesh->GetBuffers()->m_VAO);
+    glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_INT, 0);
 }
 
 
@@ -393,29 +469,21 @@ void SurvivalMaze::OnInputUpdate(float deltaTime, int mods)
           // Check player-maze collision
     deltaTime = deltaTime * 3;
 
-    if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) {
+    //if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) {
         if (window->KeyHold(GLFW_KEY_RIGHT)) {
-            carTranslateX += deltaTime;
-            carAngularStepOZ -= deltaTime * 2;
         }
         if (window->KeyHold(GLFW_KEY_LEFT)) {
-            carTranslateX -= deltaTime;
-            carAngularStepOZ += deltaTime * 2;
 
         }
         if (window->KeyHold(GLFW_KEY_UP)) {
-            carTranslateZ -= deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_DOWN)) {
-            carTranslateZ += deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_S)) {
             player.Move(0, 0, -deltaTime);
             DoPlayerObjectsCollisions();
-            translateZ += deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_W)) {
-            translateZ -= deltaTime;
             player.Move(0, 0, deltaTime);
             DoPlayerObjectsCollisions();
 
@@ -426,21 +494,17 @@ void SurvivalMaze::OnInputUpdate(float deltaTime, int mods)
             player.Move(+deltaTime, 0, 0);
             DoPlayerObjectsCollisions();
 
-            translateX -= deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_D)) {
             player.Move(-deltaTime, 0, 0);
             DoPlayerObjectsCollisions();
 
-            translateX += deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_R)) {
-            translateY += deltaTime;
         }
         if (window->KeyHold(GLFW_KEY_F)) {
-            translateY -= deltaTime;
         }
-    }
+    //}
    
     if (window->KeyHold(GLFW_KEY_1)) {
         scaleX += deltaTime;
@@ -497,7 +561,20 @@ void SurvivalMaze::OnKeyPress(int key, int mods)
 
     else if (key == GLFW_KEY_SPACE)
     {
-        bullets.push_back(Bullet({player.body.getPosition().x,player.body.getPosition().y,player.body.getPosition().z}, BULLET_RADIUS));
+        //if (isFirstPerson) {
+        float bullet_angle = amazing_rotate_angle + M_PI/4;
+            
+            if (bullet_angle > 6.28) {
+                bullet_angle = bullet_angle - 6.28;
+            }
+            bullets.push_back(Bullet({ player.body.getPosition().x,player.body.getPosition().y,player.body.getPosition().z }, BULLET_RADIUS, bullet_angle));
+            //cout << amazing_rotate_angle << endl;
+        //}
+    }
+
+    if (key == GLFW_KEY_RIGHT_CONTROL) {
+        //TODO change it a lil bit
+        isFirstPerson = isFirstPerson ? false : true;
     }
 }
 
@@ -510,7 +587,34 @@ void SurvivalMaze::OnKeyRelease(int key, int mods)
 
 void SurvivalMaze::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 {
-    // Add mouse move event
+    float sensitivityOX = 0.001f;
+    float sensitivityOY = 0.001f;
+
+    if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
+    {
+        cout << amazing_rotate_angle << endl;
+        
+        switch (isFirstPerson) {
+        case true:
+            camera->RotateFirstPerson_OX(sensitivityOX * -deltaY);
+            camera->RotateFirstPerson_OY(sensitivityOY * -deltaX);
+            amazing_rotate_angle += sensitivityOY * -deltaX;
+            if (amazing_rotate_angle > 6.28) {
+                amazing_rotate_angle = 0;
+            }
+            else if (amazing_rotate_angle < 0) {
+                amazing_rotate_angle = 6.28;
+            }
+            break;
+        case false:
+            camera->RotateThirdPerson_OX(sensitivityOX * -deltaY);
+            camera->RotateThirdPerson_OY(sensitivityOY * -deltaX);
+            amazing_rotate_angle += sensitivityOY * -deltaX;
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 

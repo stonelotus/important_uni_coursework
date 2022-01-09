@@ -8,6 +8,8 @@ Box::Box(dimensionsTriplet position,dimensionsTriplet size) :x(position.x), y(po
 	this->modelMatrix = glm::mat4(1);
 	this->modelMatrix *= transform3D::Translate(position.x,position.y,position.z);
 	this->modelMatrix *= transform3D::Scale(size.x, size.y, size.z);
+	
+	//this->color = "";
 }
 
 Box::~Box(){}
@@ -32,4 +34,13 @@ void Box::setPosition(float x, float y, float z) {
 	this->modelMatrix = glm::mat4(1);
 	this->modelMatrix = glm::scale(this->modelMatrix, { this->sizeX, this->sizeY, this->sizeZ });
 	this->modelMatrix = glm::translate(this->modelMatrix, { this->x,this->y,this->z });
+}
+
+glm::vec3 Box::getShaderColor()
+{
+	return this->color;
+}
+void Box::setShaderColor(glm::vec3 new_shader_color)
+{
+	this->color = new_shader_color;
 }

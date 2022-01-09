@@ -8,6 +8,7 @@
 #include <iostream>
 #include <chrono>
 #include <random>
+#include "lab_m1/tema2/lab_camera.h"
 #include "lab_m1/tema2/entities/sphere/sphere.h"
 #include "lab_m1/tema2/entities/bullet/bullet.h"
 #include "lab_m1/tema2/entities/enemy/enemy.h"
@@ -26,7 +27,7 @@ using namespace std;
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
-
+        void RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix, const glm::vec3& color);
         void OnInputUpdate(float deltaTime, int mods) override;
         void OnKeyPress(int key, int mods) override;
         void OnKeyRelease(int key, int mods) override;
@@ -43,6 +44,11 @@ using namespace std;
         float angularStepOX, angularStepOY, angularStepOZ;
         GLenum polygonMode;
 
+        //camera
+        implemented::Camera* camera;
+        glm::mat4 projectionMatrix;
+        bool isFirstPerson;
+
         float carTranslateX, carTranslateZ;
         float carAngularStepOZ;
 
@@ -56,7 +62,7 @@ using namespace std;
         vector<Bullet>bullets;
         vector<Enemy> enemies;
         vector<vector<int>> playground_matrix;
-
+        float amazing_rotate_angle;
     };
 
 #endif

@@ -24,7 +24,7 @@ int Enemy::getDirection() {
 	return this->current_direction;
 }
 void Enemy::setDirection(int direction) {
-	std::cout << "Chosen direction: " << direction << std::endl;
+	//std::cout << "Chosen direction: " << direction << std::endl;
 	switch (direction) {
 		case 1: this->current_direction = 1; break;
 		case 2: this->current_direction = 2; break;
