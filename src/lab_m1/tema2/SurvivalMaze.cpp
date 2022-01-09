@@ -305,7 +305,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
 
     }
     {
-        // CHECK player win
+        // CHECK player win or lose
         int player_matrix_i = (int)round(player.body.getPosition().x - PLAYGROUND_MATRIX_OFFSET);
         int player_matrix_j = (int)round(player.body.getPosition().z - PLAYGROUND_MATRIX_OFFSET);
 
@@ -314,6 +314,11 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
                 cout << "You somehow won!!!";
                 exit(0);
             }
+        }
+
+        if (player.getHealth() <= 0) {
+            cout << "You lost :( ";
+            exit(0);
         }
     }
     {
