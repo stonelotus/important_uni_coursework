@@ -86,6 +86,7 @@ void CreateRandomMaze(int n, int m, vector<vector<int>> &maze) {
     maze = vector<vector<int>>(n, vector<int>(m,    1));
     //dfs(rand() % 6 + 1, rand() % 6 + 1, maze);
     dfs(3, 3, maze);    //TODO make random starting algorithm point
+
 }
 ///////////////////////////////
 void LimitedFillerDFS(vector<vector<int>>& playground_matrix, int x, int y, int remaining_depth)
@@ -158,7 +159,9 @@ void SurvivalMaze::Init()
         //test_enemy = Enemy({ -3.f,1.f,-3.f }, { 1.f,1.f,1.f });
     }
 
-    {   isFirstPerson = false;
+    {  
+        amazing_rotate_angle = 0.f;
+        isFirstPerson = false;
         camera = new implemented::Camera();
         camera->Set(glm::vec3(player.getPosition().x, player.getPosition().y, player.getPosition().z), glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
         projectionMatrix = glm::perspective(RADIANS(55.0f), window->props.aspectRatio, 0.01f, 200.0f);
@@ -228,9 +231,7 @@ void SurvivalMaze::Init()
         enemies.push_back(Enemy({ -2.f,1.f,-2.f }, { 1.f,1.f,1.f }));
     }
   
-    {
-        amazing_rotate_angle = 0.f;
-    }
+   
 
 
 }
@@ -258,7 +259,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
         camera->position = glm::vec3(player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z);
     }
     else {
-        camera->position = glm::vec3(player.body.getPosition().x, player.body.getPosition().y+5.f, player.body.getPosition().z - 3.5f);
+        camera->position = glm::vec3(player.body.getPosition().x, player.body.getPosition().y+5.f, player.body.getPosition().z - 3.5);
     }
     
 
@@ -564,8 +565,8 @@ void SurvivalMaze::OnKeyPress(int key, int mods)
         //if (isFirstPerson) {
         float bullet_angle = amazing_rotate_angle + M_PI/4;
             
-            if (bullet_angle > 6.28) {
-                bullet_angle = bullet_angle - 6.28;
+            if (bullet_angle > M_PI*2) {
+                bullet_angle = bullet_angle - M_PI*2;
             }
             bullets.push_back(Bullet({ player.body.getPosition().x,player.body.getPosition().y,player.body.getPosition().z }, BULLET_RADIUS, bullet_angle));
             //cout << amazing_rotate_angle << endl;
@@ -599,17 +600,23 @@ void SurvivalMaze::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
             camera->RotateFirstPerson_OX(sensitivityOX * -deltaY);
             camera->RotateFirstPerson_OY(sensitivityOY * -deltaX);
             amazing_rotate_angle += sensitivityOY * -deltaX;
-            if (amazing_rotate_angle > 6.28) {
-                amazing_rotate_angle = 0;
+            if (amazing_rotate_angle >= M_PI * 2) {
+                amazing_rotate_angle -= M_PI*2 ;
             }
             else if (amazing_rotate_angle < 0) {
-                amazing_rotate_angle = 6.28;
+                amazing_rotate_angle +=  M_PI * 2;
             }
             break;
         case false:
             camera->RotateThirdPerson_OX(sensitivityOX * -deltaY);
             camera->RotateThirdPerson_OY(sensitivityOY * -deltaX);
             amazing_rotate_angle += sensitivityOY * -deltaX;
+            if (amazing_rotate_angle >= M_PI * 2) {
+                amazing_rotate_angle -= 0;
+            }
+            else if (amazing_rotate_angle < 0) {
+                amazing_rotate_angle += M_PI * 2;
+            }
             break;
         default:
             break;
