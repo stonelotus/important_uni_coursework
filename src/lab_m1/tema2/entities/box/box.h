@@ -8,6 +8,7 @@ class Box {
 	float sizeX, sizeY, sizeZ;
 	glm::vec3 color;
 	glm::mat4 modelMatrix;
+	float angle;
 public:
 	Box();
 	Box(dimensionsTriplet, dimensionsTriplet);
@@ -18,6 +19,8 @@ public:
 	void Move(float, float, float);
 	glm::vec3 getShaderColor();
 	void setShaderColor(glm::vec3);
+	void setAngle(float);
+	void Rotate(float);
 };
 
 #endif

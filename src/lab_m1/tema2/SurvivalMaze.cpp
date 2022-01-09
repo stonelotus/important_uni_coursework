@@ -87,6 +87,17 @@ void CreateRandomMaze(int n, int m, vector<vector<int>> &maze) {
     //dfs(rand() % 6 + 1, rand() % 6 + 1, maze);
     dfs(3, 3, maze);    //TODO make random starting algorithm point
 
+    // make exit 
+    bool has_exit = false;
+    while (!has_exit) {
+        int exit_position = rand() % (maze[0].size() - 2) + 2;
+        if(maze[1][exit_position] == EMPTY_SPACE_MARKER){
+            maze[0][exit_position] = EMPTY_SPACE_MARKER;
+            has_exit = true;
+        }
+    }
+
+
 }
 ///////////////////////////////
 void LimitedFillerDFS(vector<vector<int>>& playground_matrix, int x, int y, int remaining_depth)
@@ -151,13 +162,14 @@ void SurvivalMaze::Init()
     translateY = 0;
     translateZ = 0;
 
-    player = Player(-4, 0, -2);
     //box = Box(10.f);
     {
         //test_sphere = Sphere({ 1.f,1.f,1.f }, 6.f);
         //test_box = Box({ 0.f,0.f,0.f }, { 1.f,1.f,1.f });
         //test_enemy = Enemy({ -3.f,1.f,-3.f }, { 1.f,1.f,1.f });
     }
+    //player = Player(-5.f, 1.f, -5.f);
+
 
     {  
         amazing_rotate_angle = 0.f;
@@ -195,7 +207,7 @@ void SurvivalMaze::Init()
                    /* playground.push_back(Box({ i + 1.f,0.f,j + 1.f },
                                              { 1.f    ,0.2f, 1.f }));
                     playground[playground.size() - 1].setShaderName("Simple");*/
-                    possible_enemy_locations.push_back({ i+ PLAYGROUND_MATRIX_OFFSET,1.5f,j+ PLAYGROUND_MATRIX_OFFSET });
+                    possible_enemy_locations.push_back({ i+ PLAYGROUND_MATRIX_OFFSET,1.f,j+ PLAYGROUND_MATRIX_OFFSET });
                
  }
             }
@@ -224,6 +236,18 @@ void SurvivalMaze::Init()
                 }
             }
             cout << endl;
+        }
+
+      
+        bool player_positioned = false;
+        while (player_positioned == false) {
+            int random_player_entry_i = rand() % (playground_matrix.size() - 2) + 2;
+            int random_player_entry_j = rand() % (playground_matrix.size() - 2) + 2;
+
+            if (playground_matrix[random_player_entry_i][random_player_entry_j] == 0) {
+                player_positioned = true;
+                player = Player(random_player_entry_i + PLAYGROUND_MATRIX_OFFSET, 1.f, random_player_entry_j + PLAYGROUND_MATRIX_OFFSET);
+            }
         }
     }
     
@@ -278,7 +302,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
             if (CheckSpheresCollision({ player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, PLAYER_HITBOX_RADIUS },
                                       { enemies[i].body.getPosition().x,enemies[i].body.getPosition().y ,enemies[i].body.getPosition().z,ENEMY_SIZE })) {
                 player.modifyHealth(-20);
-                player.Move(-player.getLastMove().x*2, -player.getLastMove().y*2, -player.getLastMove().z*2);
+                player.Move(-player.getLastMove().x, -player.getLastMove().y, -player.getLastMove().z);
             }
         }
     }
@@ -318,7 +342,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
                 bullets.erase(bullets.begin() + i);
             }
             else {
-                bullets[i].Move({sin(bullets[i].getAngle()) * deltaTimeSeconds,0.f,cos(bullets[i].getAngle()) * deltaTimeSeconds });
+                bullets[i].Move({sin(bullets[i].getAngle()) * deltaTimeSeconds*5,0.f,cos(bullets[i].getAngle()) * deltaTimeSeconds * 5 });
                 bullets[i].ModifyRemainingDistance(-5.f*deltaTimeSeconds);
             }
         }
@@ -351,7 +375,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
         }
 
         // BULLETS-WALLS COLLISIONS CHECK
-        for (int i = 0; i < bullets.size(); i++) {
+    /*    for (int i = 0; i < bullets.size(); i++) {
             for (int j = 0; j < playground.size(); j++) {
                 if (CheckSpheresCollision({ bullets[i].getPosition().x, bullets[i].getPosition().y, bullets[i].getPosition().z,bullets[i].getRadius() },
                                           { playground[j].getPosition().x, playground[j].getPosition().y,playground[j].getPosition().z, PLAYGROUND_BOX_HITBOX_RADIUS})) {
@@ -359,7 +383,7 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
                     break;
                 }
             }
-        }
+        }*/
     }
     
 
@@ -562,15 +586,15 @@ void SurvivalMaze::OnKeyPress(int key, int mods)
 
     else if (key == GLFW_KEY_SPACE)
     {
-        //if (isFirstPerson) {
-        float bullet_angle = amazing_rotate_angle + M_PI/4;
+        if (isFirstPerson) {
+        float bullet_angle = amazing_rotate_angle + M_PI/4 + 0.25f;
             
             if (bullet_angle > M_PI*2) {
                 bullet_angle = bullet_angle - M_PI*2;
             }
-            bullets.push_back(Bullet({ player.body.getPosition().x,player.body.getPosition().y,player.body.getPosition().z }, BULLET_RADIUS, bullet_angle));
+            bullets.push_back(Bullet({ player.body.getPosition().x,1.f,player.body.getPosition().z }, BULLET_RADIUS, bullet_angle));
             //cout << amazing_rotate_angle << endl;
-        //}
+        }
     }
 
     if (key == GLFW_KEY_RIGHT_CONTROL) {
@@ -621,6 +645,8 @@ void SurvivalMaze::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
         default:
             break;
         }
+        
+        player.setAngle(amazing_rotate_angle);
     }
 }
 

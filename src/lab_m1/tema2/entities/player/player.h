@@ -6,13 +6,13 @@
 #include "lab_m1/tema2/transform3D.h"
 #include "lab_m1/tema2/entities/box/box.h"
 
-#define PLAYER_HITBOX_RADIUS 0.3f
 class Player {
 	
 private:
 	float x, y, z;
 	dimensionsTriplet last_position;
 	float health;
+	float angle;
 
 public: 
 	Player(float, float, float);
@@ -27,6 +27,6 @@ public:
 	dimensionsTriplet getPosition();
 	dimensionsTriplet getLastMove();
 	Box body, head, left_leg, right_leg, right_arm, left_arm, left_palm, right_palm;
-	
+	void setAngle(float);
 };
 #endif

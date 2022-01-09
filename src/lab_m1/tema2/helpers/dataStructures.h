@@ -9,9 +9,10 @@
 #include "lab_m1/tema2/transform3D.h"
 
 #define PLAYGROUND_BOX_HITBOX_RADIUS 0.5f
-#define BULLETS_LIFE_DISTANCE 10.f
-#define ENEMY_SIZE 0.8f
-#define BULLET_RADIUS 0.2f
+#define PLAYER_HITBOX_RADIUS 0.6f
+#define BULLETS_LIFE_DISTANCE 20.f
+#define ENEMY_SIZE 1.f
+#define BULLET_RADIUS 0.5f
 #define PLAYGROUND_MATRIX_OFFSET 0.5f
 #define ENEMY_ROUTES_DEPTH 3
 

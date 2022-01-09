@@ -93,3 +93,15 @@ float Player::getHealth() {
 void Player::modifyHealth(float offset) {
 	this->health += offset;
 }
+void Player::setAngle(float angle) {
+	this->angle = angle;
+
+	body.setAngle(angle);
+	head.setAngle(angle);
+	left_leg.setAngle(angle);
+	right_leg.setAngle(angle);
+	right_arm.setAngle(angle);
+	left_arm.setAngle(angle);
+	right_palm.setAngle(angle);
+	left_palm.setAngle(angle);
+}
