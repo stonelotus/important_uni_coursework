@@ -305,6 +305,18 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
 
     }
     {
+        // CHECK player win
+        int player_matrix_i = (int)round(player.body.getPosition().x - PLAYGROUND_MATRIX_OFFSET);
+        int player_matrix_j = (int)round(player.body.getPosition().z - PLAYGROUND_MATRIX_OFFSET);
+
+        if (player_matrix_i == 0 || player_matrix_i == playground_matrix.size() - 1 || player_matrix_j == 0 || player_matrix_i == 0) {
+            if (playground_matrix[player_matrix_i][player_matrix_j] == 0) {
+                cout << "You somehow won!!!";
+                exit(0);
+            }
+        }
+    }
+    {
         // Check player-enemy collision
         for (int i = 0; i < enemies.size(); i++) {
             if (CheckSpheresCollision({ player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, PLAYER_HITBOX_RADIUS },
@@ -338,7 +350,6 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
             if (CheckSpheresCollision(
                 { player.body.getPosition().x, player.body.getPosition().y, player.body.getPosition().z, PLAYER_HITBOX_RADIUS },
                 { playground[i].getPosition().x,playground[i].getPosition().y ,playground[i].getPosition().z,PLAYGROUND_BOX_HITBOX_RADIUS })) {
-                cout << "COLLISION BOIIII " << endl;
                 player.Move( -player.getLastMove().x, -player.getLastMove().y, -player.getLastMove().z );
             }
         }
@@ -425,7 +436,6 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
         // ENEMIES RENDER
         for (int i = 0; i < enemies.size(); i++) {
             if (enemies[i].getCountdown() <= 0) {
-                cout << "Fuck off" << endl;
                 enemies.erase(enemies.begin() + i);
                 break;
             }
@@ -435,7 +445,6 @@ void SurvivalMaze::Update(float deltaTimeSeconds)
                 RenderSimpleMesh(meshes["sphere"], shaders["Simple"], enemies[i].right_eye.getModelMatrix(), glm::vec3(0.5f, 0.5f, 0.5f));
             }
             else {
-                cout << "Epic rendering...." << endl;
 
                 RenderEpicMesh(meshes["sphere"], shaders["EpicShader"], enemies[i].body.getModelMatrix(), enemies[i].getCountdown());
                 RenderEpicMesh(meshes["sphere"], shaders["EpicShader"], enemies[i].left_eye.getModelMatrix(), enemies[i].getCountdown());
