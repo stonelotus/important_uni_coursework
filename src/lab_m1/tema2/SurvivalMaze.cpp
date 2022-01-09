@@ -578,7 +578,14 @@ void SurvivalMaze::OnInputUpdate(float deltaTime, int mods)
     // TODO(student): Add transformation logic
           // Check player-maze collision
     deltaTime = deltaTime * 3;
-
+    float go_angle = amazing_rotate_angle + M_PI / 4;
+    if (go_angle > 2 * M_PI)
+    {
+        go_angle = 0;
+    }
+    else if (go_angle < 0) {
+        go_angle = 2 * M_PI;
+    }
     //if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) {
         if (window->KeyHold(GLFW_KEY_RIGHT)) {
         }
@@ -590,23 +597,24 @@ void SurvivalMaze::OnInputUpdate(float deltaTime, int mods)
         if (window->KeyHold(GLFW_KEY_DOWN)) {
         }
         if (window->KeyHold(GLFW_KEY_S)) {
-            player.Move(0, 0, -deltaTime);
+            player.Move(- sin(go_angle) *deltaTime, 0,- cos(go_angle ) * deltaTime);
             DoPlayerObjectsCollisions();
         }
         if (window->KeyHold(GLFW_KEY_W)) {
-            player.Move(0, 0, deltaTime);
+           
+            player.Move(sin(go_angle ) * deltaTime, 0, cos(go_angle) * deltaTime);
             DoPlayerObjectsCollisions();
 
          
         }
         if (window->KeyHold(GLFW_KEY_A)) {
 
-            player.Move(+deltaTime, 0, 0);
+            player.Move(sin(go_angle + M_PI / 2) * deltaTime, 0, cos(go_angle + M_PI / 2) * deltaTime);
             DoPlayerObjectsCollisions();
 
         }
         if (window->KeyHold(GLFW_KEY_D)) {
-            player.Move(-deltaTime, 0, 0);
+            player.Move(sin(go_angle - M_PI / 2) * deltaTime, 0, cos(go_angle - M_PI / 2) * deltaTime);
             DoPlayerObjectsCollisions();
 
         }
@@ -710,10 +718,10 @@ void SurvivalMaze::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
             camera->RotateFirstPerson_OY(sensitivityOY * -deltaX);
             amazing_rotate_angle += sensitivityOY * -deltaX;
             if (amazing_rotate_angle >= M_PI * 2) {
-                amazing_rotate_angle -= M_PI*2 ;
+                amazing_rotate_angle = 0 ;
             }
             else if (amazing_rotate_angle < 0) {
-                amazing_rotate_angle +=  M_PI * 2;
+                amazing_rotate_angle =  M_PI * 2;
             }
             break;
         case false:
@@ -721,10 +729,10 @@ void SurvivalMaze::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
             camera->RotateThirdPerson_OY(sensitivityOY * -deltaX);
             amazing_rotate_angle += sensitivityOY * -deltaX;
             if (amazing_rotate_angle >= M_PI * 2) {
-                amazing_rotate_angle -= 0;
+                amazing_rotate_angle = 0;
             }
             else if (amazing_rotate_angle < 0) {
-                amazing_rotate_angle += M_PI * 2;
+                amazing_rotate_angle = M_PI * 2;
             }
             break;
         default:
