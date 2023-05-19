@@ -5,8 +5,8 @@ Chunk::Chunk() :sizes(glm::vec3(16,16,16)) {
     setup();
 };
 
-Chunk::Chunk(glm::vec3 sizes)
-    : sizes(sizes) {
+Chunk::Chunk(glm::vec3 sizes,glm::vec3 origin_position)
+    : sizes(sizes),origin_position(origin_position),hitBox(origin_position,16) {
     setup();
 }
 
@@ -32,7 +32,7 @@ void Chunk::setup() {
                 if(x%2 == 0 ) block_type = BlockType::DIRT;
 				else block_type = BlockType::STONE;
              
-                setBlock(glm::vec3(x, y, z), Block(position, block_type));  //TODO check if Block still exists after this function
+                setBlock(glm::vec3(x, y, z), Block(position, block_type,origin_position));  //TODO check if Block still exists after this function
             }
         }
     }
@@ -95,3 +95,8 @@ BlockLighting Chunk::calculateAverageMaterialProperties() const {
 
     return average;
 }
+
+BoundingBox Chunk::getHitbox() const {
+    return hitBox;
+}
+

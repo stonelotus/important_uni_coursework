@@ -11,7 +11,7 @@ class Block {
 public:
     Block();
     Block(glm::vec3 local_position, BlockType type);
-    
+    Block(glm::vec3 local_position, BlockType type, glm::vec3 chunk_position);
     glm::vec3 getLocalPosition() const;
     glm::vec3 getAbsolutePosition() const;
     glm::vec3 getColor() const;
@@ -25,6 +25,7 @@ public:
 private:
     glm::vec3 absolute_position;
     glm::vec3 local_position;
+    glm::vec3 chunk_position;
     glm::vec3 color;
     BlockType type;
     BlockLighting lighting;

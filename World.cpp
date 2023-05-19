@@ -11,7 +11,7 @@ void World::generateGround() {
     std::cout << "Generating ground..." << std::endl;
     for (unsigned int x = 0; x < width; ++x) {
         for (unsigned int z = 0; z < depth; ++z) {
-            chunks.emplace_back(new Chunk());  // 16x16x16 chunk
+            chunks.emplace_back(new Chunk(glm::vec3(16,16,16),glm::vec3(x*17,-17,z*17)));  // 16x16x16 chunk
 
             
             //Chunk* chunk = chunks.back();
@@ -26,6 +26,27 @@ void World::generateGround() {
 	}
     std::cout << "Chunk renderers: " << chunkRenderers.size() << std::endl;
     std::cout << "Generating ground DONE =====" << std::endl;
+}
+
+
+bool World::checkCollisions(Player player) {
+    Chunk currentChunk = *(chunks[0]);
+    if (currentChunk.getHitbox().intersects(player.hitBox)) {
+        return true;
+    }
+    else {
+		return false;
+	}
+}
+
+bool World::checkCollisions(BoundingBox cameraHitbox) {
+    Chunk* currentChunk = (chunks[0]);
+    if ((*currentChunk).getHitbox().intersects(cameraHitbox)) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 void World::draw(Shader& shader) {

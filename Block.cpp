@@ -12,6 +12,10 @@ Block::Block(glm::vec3 local_position, BlockType type)
     setup();
 }
 
+Block::Block(glm::vec3 local_position, BlockType type, glm::vec3 chunk_position)
+    :local_position(local_position), type(type),chunk_position(chunk_position) {
+    setup();
+}
 
 void Block::setup() {
     color = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -20,7 +24,7 @@ void Block::setup() {
     lighting.specular = glm::vec3(0.2f, 0.2f, 0.2f);
     lighting.shininess = 32.0f;
 
-    absolute_position = local_position + glm::vec3(0, 0, 0);    //TODO modify 000 with chunk position
+    absolute_position = local_position + chunk_position;    //TODO modify 000 with chunk position
 }
 
 void Block::setShaderLighting(Shader& shader) {

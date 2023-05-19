@@ -21,6 +21,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "World.h"
+#include "Model.h"
+#include "Sphere.h"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -41,6 +43,8 @@ glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / 
 
 // Caemra
 Camera camera(glm::vec3(0.3f, 0.5f, 3.0f));
+BoundingBox camerahitBox(camera.Position,1);
+glm::vec3 camera_previous_position;
 
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -67,6 +71,7 @@ void printMat4(const glm::mat4& mat) {
 float big_position = 0.5f;
 // lighting
 glm::vec3 lightPos(1.0f, 1.0f, 1.0f);
+glm::vec3 lightPos2(1.0f, 0.5f, 4.0f);
 int main()
 {
     // glfw: initialize and configure
@@ -110,6 +115,7 @@ int main()
     // build and compile our shader zprogram
     Shader basicShader("C:\\Users\\asus\\source\\repos\\minecraft_clone\\mainProj\\basicShader.vs", "C:\\Users\\asus\\source\\repos\\minecraft_clone\\mainProj\\basicShader.fs");
     Shader textureShader("C:\\Users\\asus\\source\\repos\\minecraft_clone\\mainProj\\textureShader.vs", "C:\\Users\\asus\\source\\repos\\minecraft_clone\\mainProj\\textureShader.fs");
+    Shader lampShader("C:\\Users\\asus\\source\\repos\\minecraft_clone\\mainProj\\lamp.vs", "C:\\Users\\asus\\source\\repos\\minecraft_clone\\mainProj\\lamp.fs");
 
 
     // Create chunk
@@ -128,7 +134,15 @@ int main()
 
     // render loop
 
-    World world(1, 1);
+    World world(3,3);
+    Model myModel("C:\\Users\\asus\\source\\repos\\minecraft_clone\\mainProj\\assets\\models\\spider.obj");
+
+
+    // lamp
+   
+
+    Sphere sphere = Sphere();
+    
 
     while (!glfwWindowShouldClose(window))
     {
@@ -137,48 +151,81 @@ int main()
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-
+        float angle = currentFrame * 90.0f;
         // input
         processInput(window);
 
         // rendering commands here
-        glClearColor(1.0f, 0.5f, 0.1f, 1.0f);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = glm::mat4(1.0f);
 
-        lightPos = camera.Position;
+        //lightPos = camera.Position;
         view = camera.GetViewMatrix();
       
 
         // 
         // 
         // world transf
-        glm::mat4 model = glm::mat4(1.0f);
-        basicShader.setMat4("model", model);
+        glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.05f));
+        glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(26.0f, 0.0f, 26.0f));
+        glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-angle), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 spider_model = translationMatrix * scaleMatrix *rotationMatrix;
+       
+        basicShader.use();
+        basicShader.setMat4("model", spider_model);
         basicShader.setMat4("view", view);
         basicShader.setVec3("lightPos", lightPos);
         basicShader.setMat4("projection", projection);
         basicShader.setVec3("viewPos", camera.Position);
+        basicShader.setVec3("objectColor", glm::vec3(1.0f, 0.0f, 0.0f));
+        basicShader.setVec3("lightColor", glm::vec3(0.5f, 0.5f, 0.0f));
+        myModel.draw(basicShader);
 
-        textureShader.setMat4("model", model);
+
+        
+		lampShader.use();
+		lampShader.setMat4("projection", projection);
+		lampShader.setMat4("view", view);
+        glm::mat4 modelLamp = glm::mat4(1.0f);
+        modelLamp = glm::rotate(modelLamp,glm::radians(angle), glm::vec3(0.f, 1.f, 0.f));
+        modelLamp = translationMatrix * modelLamp;
+        modelLamp = glm::translate(modelLamp, lightPos2 + glm::vec3(5.0f,0.0f,0.0f));
+        modelLamp = glm::scale(modelLamp, glm::vec3(0.5f)); 
+		lampShader.setMat4("model", modelLamp);
+
+		
+		lightPos = glm::vec3(modelLamp[3]);
+        sphere.render(lampShader);
+
+
+
+        
+        glm::mat4 terrain_model = glm::mat4(1.0f);
+
+        textureShader.use();
+        textureShader.setMat4("model", terrain_model);
         textureShader.setMat4("view", view);
         textureShader.setVec3("lightPos", lightPos);
         textureShader.setMat4("projection", projection);
         textureShader.setVec3("viewPos", camera.Position);
 
-        ////// Render the chunk
+        //////// Render the chunk
+        if (world.checkCollisions(camerahitBox) == true) {
+            camera.Position = camera_previous_position;
+        }
+
 
         world.draw(textureShader);
 
-        //chunkRenderer.render(textureShader);
-        //chunkRenderer.renderBlock(chunk.getBlock(0, 0, 0));
-   
+        
+
+
         
         
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -191,9 +238,9 @@ int main()
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void processInput(GLFWwindow* window)
 {
+    camera_previous_position = camera.Position;
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(FORWARD, deltaTime*_SPEED_UP);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -202,6 +249,7 @@ void processInput(GLFWwindow* window)
         camera.ProcessKeyboard(LEFT, deltaTime*_SPEED_UP);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime*_SPEED_UP);
+    camerahitBox.updatePosition(camera.Position,1);
 
 }
 

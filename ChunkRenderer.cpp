@@ -30,7 +30,6 @@ void ChunkRenderer::render(Shader& shader) {
     //shader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
     //shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
-   std::cout << chunkIndices_dirt.size() << std::endl;
     texture.Bind(0);
     shader.setInt("texture1", 0);
     glBindVertexArray(VAO_dirt);
@@ -39,7 +38,7 @@ void ChunkRenderer::render(Shader& shader) {
 
     texture.Unbind();
 
-    Texture texture2(BlockType::STONE);
+    Texture texture2(BlockType::STONE); //TODO not efficient here
     texture2.Bind(0);
     shader.setInt("texture1", 0);
     glBindVertexArray(VAO_stone);
