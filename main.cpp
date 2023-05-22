@@ -10,7 +10,6 @@
 
 #include <iostream>
 
-// Game
 #include "Block.h"
 #include "Chunk.h"
 #include "ChunkRenderer.h"
@@ -37,7 +36,6 @@ const unsigned int SCR_HEIGHT = 600;
 // camera
 //Camera camera(glm::vec3(8.0f, 8.0f, 20.0f));
 
-
 // Create a projection matrix
 glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
@@ -53,7 +51,6 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-
 
 float _SPEED_UP = 3.0f;
 
@@ -100,7 +97,6 @@ int main()
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 
-
     // glad: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -118,27 +114,15 @@ int main()
     Shader lampShader("C:\\Users\\asus\\source\\repos\\minecraft_clone\\mainProj\\lamp.vs", "C:\\Users\\asus\\source\\repos\\minecraft_clone\\mainProj\\lamp.fs");
 
 
-    // Create chunk
-    /*Chunk chunk = Chunk();
-       
-    ChunkRenderer chunkRenderer(chunk);*/
-
-    //Block block(glm::vec3(0.0f, 0.0f, 0.0f), BlockType::AIR);
-    //BlockRenderer blockRenderer(block, basicShader);
-
     BlockLighting blockLighting;
     blockLighting.ambient = glm::vec3(0.1f, 0.1f, 0.1f);
     blockLighting.diffuse = glm::vec3(1.0f, 0.0f, 0.0f);
     blockLighting.specular = glm::vec3(0.5f, 0.5f, 0.5f);
     blockLighting.shininess = 32.0f;
 
-    // render loop
 
     World world(3,3);
     Model myModel("C:\\Users\\asus\\source\\repos\\minecraft_clone\\mainProj\\assets\\models\\spider.obj");
-
-
-    // lamp
    
 
     Sphere sphere = Sphere();
@@ -163,13 +147,12 @@ int main()
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = glm::mat4(1.0f);
 
-        //lightPos = camera.Position;
         view = camera.GetViewMatrix();
       
 
         // 
         // 
-        // world transf
+        // draw spider
         glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.05f));
         glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(26.0f, 0.0f, 26.0f));
         glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-angle), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -186,7 +169,7 @@ int main()
         myModel.draw(basicShader);
 
 
-        
+        // draw lamp sphere
 		lampShader.use();
 		lampShader.setMat4("projection", projection);
 		lampShader.setMat4("view", view);
@@ -196,14 +179,14 @@ int main()
         modelLamp = glm::translate(modelLamp, lightPos2 + glm::vec3(5.0f,0.0f,0.0f));
         modelLamp = glm::scale(modelLamp, glm::vec3(0.5f)); 
 		lampShader.setMat4("model", modelLamp);
-
+		lightPos = glm::vec3(modelLamp[3]); 
 		
-		lightPos = glm::vec3(modelLamp[3]);
+
         sphere.render(lampShader);
 
 
 
-        
+        // draw textured terrain
         glm::mat4 terrain_model = glm::mat4(1.0f);
 
         textureShader.use();
@@ -213,18 +196,13 @@ int main()
         textureShader.setMat4("projection", projection);
         textureShader.setVec3("viewPos", camera.Position);
 
-        //////// Render the chunk
+        // apply collisions
         if (world.checkCollisions(camerahitBox) == true) {
             camera.Position = camera_previous_position;
         }
 
-
         world.draw(textureShader);
 
-        
-
-
-        
         
         glfwSwapBuffers(window);
         glfwPollEvents();
